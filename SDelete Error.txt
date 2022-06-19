@@ -1,0 +1,38 @@
+Здравствуйте Уважаемый Марк!
+
+Я всегда восхощаюсь вашей превосходной работой и талантом!
+
+Прошу вашей помощи, так как не могу найти нигде информацию о том как и куда сообщить об ошибке в утилите SDelete из пакета Sysinternals.
+
+Дело в том, что если при использовании утилиты, в очищаевой папке будут файлы или папки не только с латинскими буквами,
+но и с символами других языков (Unicode), то в выводе программы вместо этих букв всегда вопросительные знаки "?".
+
+Также, на Windows с неанглийским интерфейсом, часть сообщений в консоль от SDelete также отображается со знаками вопроса.
+Возможно программа пытается транслировать системные сообщения от ОС, но также повреждает их, как и с именами файлов.
+
+Я разработал GUI для этой прекрасной утилиты (https://github.com/uom42/SDeleteGUI), и столкнулся с данной проблемой.
+Перебор кодировки не помогает! 
+
+Прошу дать контакт или ссылку, к кому обратиться по данному вопросу...
+
+-----------------------------------------------------------------------------
+
+Hello Dear Mark!
+
+I always admire your excellent work and talent!
+
+I ask for your help, because I can not find anywhere information on how and where to report a bug in the SDelete utility from the Sysinternals package.
+
+The fact is that if, when using the utility, in the cleaning folder there will be files or folders not only with Latin letters,
+but also with symbols of other languages ​​(Unicode), then in the output of the program instead of these letters there are always question marks "?".
+
+Also, on Windows with a non-English interface, some of the messages to the console from SDelete are also displayed with question marks.
+Perhaps the program tries to translate system messages from the OS, but also corrupts them, as it does with file names.
+
+I developed the GUI for this great tool (https://github.com/uom42/SDeleteGUI) and I ran into this problem.
+Enumeration of the encoding does not help!
+
+Please provide a contact or link to whom to contact regarding this issue ...
+
+Sincerely,
+ Oleg Usmanov, LLC "ABK"
