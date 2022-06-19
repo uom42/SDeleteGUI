@@ -1,0 +1,50 @@
+G:\_ISO\VC>sdelete
+
+SDelete v2.04 - Secure file delete
+Copyright (C) 1999-2019 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+usage: sdelete [-p passes] [-r] [-s] [-q] <file or directory> [...]
+       sdelete [-p passes] [-z|-c [percent free]] <drive letter [...]>
+       sdelete [-p passes] [-z|-c] <physical disk number>
+
+   -c         Clean free space. Specify an option amount of space
+              to leave free for use by a running system.
+   -f         Force arguments containing only letters to be treated as a file/directory rather than a disk.
+              Not required if the argument contains other characters (path separators or file extensions for example)
+   -p         Specifies number of overwrite passes (default is 1)
+   -r         Remove Read-Only attribute
+   -s         Recurse subdirectories
+   -z         Zero free space (good for virtual disk optimization)
+   -nobanner  Do not display the startup banner and copyright message.
+
+Disks must not have any volumes in order to be cleaned.
+
+
+G:\_ISO\VC>sdelete g:/ -c -z
+
+SDelete v2.04 - Secure file delete
+Copyright (C) 1999-2019 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+
+Invalid option: g:/
+Target must be formatted as 'driveletter:' (e.g. 'd:') or disk number (e.g. '0').
+
+
+G:\_ISO\VC>sdelete g: -c -z
+
+SDelete v2.04 - Secure file delete
+Copyright (C) 1999-2019 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+SDelete is set for 1 pass.
+Free space cleaned on G:\
+1 drive cleaned.
+
+G:\_ISO\VC>
+
+
+
+
+
