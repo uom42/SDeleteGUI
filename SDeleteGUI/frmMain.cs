@@ -13,61 +13,67 @@ namespace SDeleteGUI
 		{
 			InitializeComponent();
 
+			Text = $"{Application.ProductName} {Application.ProductVersion}";
+
 			this.Load += async (_, _) => await _Load();
+			this.FormClosing += (s, e) => { if (e.CloseReason == CloseReason.UserClosing) sdmgr!.Stop(); };
+
+			optSource_Disk.CheckedChanged += (_, _) => OnSourceChanged();
+			optSource_Dir.CheckedChanged += (_, _) => OnSourceChanged();
+			optSource_Files.CheckedChanged += (_, _) => OnSourceChanged();
 		}
 
 		SDeleteManager? sdmgr = null;
 
 		private async Task _Load()
 		{
+			InitSDeleteEngine();
+			await InitUI();
+		}
+
+
+		private void InitSDeleteEngine()
+		{
+			sdmgr = new SDeleteManager();
+			DataReceivedEventHandler outputDataReceived = new((_, e) =>
+			{
+				if (e.Data == null) return;
+				string s = e.Data ?? string.Empty;
+				if (s.e_IsNullOrEmpty()) return;
+
+				Debug.WriteLine($"Output Data: '{s}'");
+				txtOutput.e_runInUIThread_AppendLine(s, 1000);
+			});
+
+			DataReceivedEventHandler errorDataReceived = new((_, e) =>
+			{
+				if (e.Data == null) return;
+				string s = e.Data ?? string.Empty;
+				if (s.e_IsNullOrEmpty()) return;
+
+				Debug.WriteLine($"Error Data: '{s}'");
+				txtOutput.e_runInUIThread_AppendLine("ERROR!: " + (s), 1000);
+			});
+
+			sdmgr.Output += outputDataReceived;
+			sdmgr.Error += errorDataReceived;
+			sdmgr.Finished += (_, _) => this.e_runInUIThread(() => OnFinished());
+		}
+
+
+		private async Task InitUI()
+		{
 			try
 			{
-				sdmgr = new SDeleteManager();
+				txtSDeleteBinPath.Text = sdmgr!.SDeleteBinary.FullName;
+				//txtSource_Dir.Text = @"E:\_222 — копия";
 
-
-				this.FormClosing += (s, e) =>
-				{
-					if (e.CloseReason != CloseReason.UserClosing) return;
-					sdmgr.Stop();
-				};
-
-
-				txtSDeleteBinPath.Text = sdmgr.SDeleteBinary.FullName;
 
 				optSource_Disk.Checked = true;
+				//OnSourceChanged();
 
-
-				txtSource_Dir.Text = @"E:\_222 — копия";
 
 				await FillDisksList();
-
-
-
-				DataReceivedEventHandler outputDataReceived = new((_, e) =>
-				{
-					if (e.Data == null) return;
-					string s = e.Data ?? string.Empty;
-					if (s.e_IsNullOrEmpty()) return;
-
-					Debug.WriteLine($"Output Data: '{s}'");
-					txtOutput.e_runInUIThread_AppendLine(s, 1000);
-				});
-
-				DataReceivedEventHandler errorDataReceived = new((_, e) =>
-				{
-					if (e.Data == null) return;
-					string s = e.Data ?? string.Empty;
-					if (s.e_IsNullOrEmpty()) return;
-
-					Debug.WriteLine($"Error Data: '{s}'");
-					txtOutput.e_runInUIThread_AppendLine("ERROR!: " + (s), 1000);
-				});
-
-
-				sdmgr.Output += outputDataReceived;
-				sdmgr.Error += errorDataReceived;
-				sdmgr.Finished += (_, _) => this.e_runInUIThread(() => OnFinished());
-
 
 			}
 			catch (Exception ex)
@@ -81,23 +87,41 @@ namespace SDeleteGUI
 			}
 		}
 
-
 		/// <summary>Load Physical disk list from WMI</summary>
 		private async Task FillDisksList()
 		{
 			cboSource_Disk.Items.Clear();
-			optSource_Disk.Enabled = false;
+			cboSource_Disk.Items.Add("Loading disk list...");
+			cboSource_Disk.SelectedIndex = 0;
 			cboSource_Disk.Enabled = false;
 
-			WmiDisk[] wd = await WmiDisk.GetDisksAsync();
+			optSource_Disk.Enabled = false;
 
-			optSource_Disk.Enabled = wd.Any();
-			cboSource_Disk.Enabled = wd.Any();
-			if (wd.Any())
+			try
 			{
-				cboSource_Disk.Items.AddRange(wd);
-				cboSource_Disk.SelectedItem = wd.Last();
+				WmiDisk[] wd = await WmiDisk.GetDisksAsync();
+				cboSource_Disk.Items.Clear();
+				optSource_Disk.Enabled = wd.Any();
+				cboSource_Disk.Enabled = wd.Any();
+				if (wd.Any())
+				{
+					cboSource_Disk.Items.AddRange(wd);
+					cboSource_Disk.SelectedItem = wd.Last();
+				}
 			}
+			catch (Exception ex)
+			{
+				cboSource_Disk.Items.Clear();
+				cboSource_Disk.Items.Add(ex.Message);
+				cboSource_Disk.SelectedIndex = 0;
+			}
+		}
+
+		private void OnSourceChanged()
+		{
+			cboSource_Disk.Enabled = optSource_Disk.Checked;
+			txtSource_Dir.Enabled = optSource_Dir.Checked;
+			txtSource_Files.Enabled = optSource_Files.Checked;
 		}
 
 		private void UpdateUI()

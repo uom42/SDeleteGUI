@@ -1,25 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Management;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using uom.Extensions;
+﻿using System.Management;
 
 #nullable enable
 
@@ -28,8 +7,7 @@ namespace uom.Extensions
 	internal static class Extensions_Management
 	{
 
-		public static (string Name, object Value, PropertyData PropData)[]
-			GetAllProperties(this ManagementObject mo)
+		public static (string Name, object Value, PropertyData PropData)[] GetAllProperties(this ManagementObject mo)
 		{
 			var props = mo.Properties
 				.Cast<PropertyData>()
