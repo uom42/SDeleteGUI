@@ -4475,7 +4475,11 @@ namespace uom
 					pb.Maximum = iMax;
 					pb.Value = iValue;
 				}
-				finally { pb.ResumeLayout(); }
+				finally
+				{
+					pb.ResumeLayout();
+					pb.Update();
+				}
 			}
 		}
 

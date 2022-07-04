@@ -6,7 +6,13 @@
 		<Nullable>enable</Nullable>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ApplicationIcon>trash (4).ico</ApplicationIcon>
+		<Version>1.1.0.0</Version>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="trash (4).ico" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Libs\" />
@@ -15,6 +21,7 @@
 	<ItemGroup>
 		<PackageReference Include="System.Management" Version="6.0.0" />
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+		<PackageReference Include="WindowsAPICodePack" Version="1.1.3" />
 	</ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System.Management;
 
-namespace SDeleteGUI.Core
+namespace SDeleteGUI.Core.SDelete
 {
 	internal class WmiDisk
 	{

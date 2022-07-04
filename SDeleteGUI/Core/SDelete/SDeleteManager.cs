@@ -2,8 +2,9 @@
 using System.Text;
 using uom;
 using System.Threading;
+using System.Text.RegularExpressions;
 
-namespace SDeleteGUI.Core
+namespace SDeleteGUI.Core.SDelete
 {
 	internal class SDeleteManager
 	{
@@ -43,13 +44,17 @@ namespace SDeleteGUI.Core
 
 
 		public event EventHandler Finished = delegate { };
-		public event DataReceivedEventHandler Output = delegate { };
+		public event DataReceivedEventHandler OutputRAW = delegate { };
+		public event EventHandler<ProgressInfo> OutputProgress = delegate { };
 		public event DataReceivedEventHandler Error = delegate { };
 
-		//private DataReceivedEventHandler? _outputDataReceived = null;
-		//private DataReceivedEventHandler? _errorDataReceived = null;
-		//private EventHandler? _onProcessFinished = null;
-
+		public enum CleanModes
+		{
+			/// <summary>Zero free space (good for virtual disk optimization)</summary>
+			Zero = 0,
+			/// <summary>Clean free space. Specify an option amount of space</summary>
+			Clean
+		}
 
 		public SDeleteManager()
 		{
@@ -78,61 +83,68 @@ namespace SDeleteGUI.Core
 		}
 
 
-		public void Run(uint passes, WmiDisk disk)
+
+
+		/// <summary>Clean entrie Physical disk
+		/// Make sure that the disk has no file system volumes!
+		/// </summary>
+		public void Run(uint passes, WmiDisk disk, CleanModes cm)
 		{
 			if (disk.Partitions > 0) throw new Exception($"Make sure that the disk '{disk}' has no file system volumes!");
-
-			string args = @$"/accepteula -p {passes} ";
-			args += @$"{disk.Index} -z";
-			StartSDeleteCore(args);
+			string args = @$"-{cm.ToString().ToLower()[0]} {disk.Index}";
+			StartSDeleteCore(passes, args);
 		}
 
-		/// <summary>CleanDirectory
-		/// usage: sdelete [-p passes] [-r] [-s] [-q] <file or directory> [...]
-		/// </summary>
+
+		/// <summary>Zeroing free space on Disk</summary>
+		public void Run(uint passes, char disk, CleanModes cm)
+		{
+			//string args = @$"-f -r -s {disk} -{cm.ToString().ToLower()[0]}";
+			string args = @$"-f -r -s -{cm.ToString().ToLower()[0]} {disk}:";
+			StartSDeleteCore(passes, args);
+		}
+
+
+		/// <summary>Clean Directory on disk</summary>
 		public void Run(uint passes, DirectoryInfo dirToClean)
 		{
 			if (!dirToClean.Exists) throw new Exception($"Directory '{dirToClean}' not found!");
 
-
-			string args = @$"/accepteula -p {passes} ";
-
-			bool isRoot = (dirToClean.ToString().ToLower() == dirToClean.Root.ToString().ToLower());
+			string args = "";
+			bool isRoot = dirToClean.ToString().ToLower() == dirToClean.Root.ToString().ToLower();
 			if (isRoot)
 			{
 				args += @$"-f -r -s ""{dirToClean.FullName[0]}:\*""";
-				//args += @$"-f -r -s {dirToClean.FullName[0]}:";
 			}
 			else
 			{
 				args += @$"-f -r -s ""{dirToClean}""";
 			}
-
-			/*
-			 args += @$"-f -r -s {dirToClean.FullName[0]}:";
-			'C:\ProgramData\chocolatey\lib\sysinternals\tools\sdelete64.exe', Args: '/accepteula -p 1 -f -r -s E:'
-
-			 Zeroing free space on E:\: 0% ...
-			 */
-
-			StartSDeleteCore(args);
+			StartSDeleteCore(passes, args);
 		}
 
-		private void StartSDeleteCore(string SDeleteArgs)
+		/// <summary>Clean Directory on disk</summary>
+		public void Run(uint passes, FileInfo[] filesToClean)
+		{
+			if (!filesToClean.Any()) throw new ArgumentNullException(nameof(filesToClean));
+			foreach (FileInfo fi in filesToClean)
+			{
+				fi.Refresh();
+				if (!fi.Exists) throw new Exception($"File '{fi}' not found!");
+			}
+
+			string args = @"-r " + string.Join(" ", filesToClean
+				.Select(fi => (constants.CC_QUOTE + fi.FullName + constants.CC_QUOTE)).ToArray());
+
+			StartSDeleteCore(passes, args);
+		}
+
+
+		private void StartSDeleteCore(uint passes, string SDeleteArgs)
 		{
 
-			/* 			 
-			var outputDataReceived = new DataReceivedEventHandler((s, e) =>
-				   {
-					   //Debug.WriteLine($"Output Data: '{e.Data}'");
-					   Output.Invoke(s, e);
-				   });
+			SDeleteArgs = @$"/accepteula -p {passes} " + SDeleteArgs;
 
-			_errorDataReceived = errorDataReceived ?? new DataReceivedEventHandler((s, e) =>
-			{
-				Debug.WriteLine($"Error Data: '{e.Data}'");
-			});
-			 */
 
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -181,11 +193,41 @@ namespace SDeleteGUI.Core
 		{
 			if (runningProcess == null) throw new ArgumentNullException(nameof(runningProcess));
 
-			runningProcess.OutputDataReceived += Output;
-			runningProcess.ErrorDataReceived += Error;
+			runningProcess.OutputDataReceived += OnCore_Data;
+			runningProcess.ErrorDataReceived += OnCore_Error;
+
 			runningProcess.BeginOutputReadLine();
 			runningProcess.BeginErrorReadLine();
 		}
+
+
+		private void OnCore_Data(object sender, DataReceivedEventArgs e)
+		{
+			if (e.Data == null) return;
+			string s = (e.Data ?? string.Empty).Trim();
+			if (s.e_IsNullOrEmpty()) return;
+
+			if (null == OutputRAW) Debug.WriteLine($"WARNING! Unprocessed Output Data: '{s}'");
+			OutputRAW!.Invoke(sender, e);
+
+			if (ProgressInfo.IsMatch(s))
+			{
+				ProgressInfo pi = new(s);
+				OutputProgress!.Invoke(this, pi);
+			}
+		}
+		private void OnCore_Error(object sender, DataReceivedEventArgs e)
+		{
+			if (e.Data == null) return;
+			string s = (e.Data ?? string.Empty).Trim();
+			if (s.e_IsNullOrEmpty()) return;
+
+			if (null == Error) Debug.WriteLine($"WARNING! Unprocessed Error Data: '{s}'");
+			Error!.Invoke(sender, e);
+		}
+
+
+
 		private void CoreDisConnect()
 		{
 			if (runningProcess == null) throw new ArgumentNullException(nameof(runningProcess));
@@ -202,9 +244,8 @@ namespace SDeleteGUI.Core
 			{
 				while (!runningProcess!.HasExited)
 				{
-					Debug.WriteLine($"*** ConsoleCore Waitning...");
+					///Debug.WriteLine($"*** ConsoleCore Waitning...");
 					runningProcess.WaitForExit(1000);
-					var t = 9;
 				}
 			}
 			catch (Exception ex)
@@ -224,7 +265,7 @@ namespace SDeleteGUI.Core
 		private void OnFinished()
 		{
 			runningProcess = null;
-			Finished!.Invoke(this, System.EventArgs.Empty);
+			Finished!.Invoke(this, EventArgs.Empty);
 			_thCore = null;
 		}
 
