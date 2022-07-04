@@ -26,14 +26,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-#nullable enable
 
+
+#nullable enable
 #if NET5_0_OR_GREATER || NET6_0_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 //return Environment.TickCount64;//5, 6, Core 3.0, Core 3.1
 #else
 //return 0L;
 #endif
-
 /// <summary>Commnon Tools For Net Apps (WINDOWN PLATFORM)
 /// (C)UOM 2000 - 2022 </ summary >
 namespace uom
@@ -1168,7 +1168,7 @@ namespace uom
 				{
 					using var imgFile = Image.FromFile(sUserImagePath);
 					// Надо использовать клонирование, чтобы не занимать файл изображения, а освободить его сразу после чтения
-					return imgFile!.ExtSer_CloneAsSomeType();
+					return imgFile!.e_CloneAsSomeType();
 				}
 				// У пользователя картинки библиотеки его аватаров лежат в 'C:\Users\uom\AppData\Roaming\Microsoft\Windows\AccountPictures
 				return null;
@@ -2994,18 +2994,29 @@ namespace uom
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static void e_SetValue(this RegistryKey hRegKey,
-									   string ValueName,
-									   object ObjValue,
-									   RegistryValueKind RegType = RegistryValueKind.DWord,
+			public static void e_SetValue<T>(this RegistryKey hRegKey,
+									   string name,
+									   T value,
 									   bool DeleteRegistryRecordIfNullValueValue = true)
 			{
-				if (DeleteRegistryRecordIfNullValueValue && (null == ObjValue))
+				if (DeleteRegistryRecordIfNullValueValue && (null == value))
 				{
-					if (DeleteRegistryRecordIfNullValueValue) hRegKey.DeleteValue(ValueName, false); //Delete Value
+					if (DeleteRegistryRecordIfNullValueValue) hRegKey.DeleteValue(name, false); //Delete Value
 					return;
 				}
-				hRegKey.SetValue(ValueName, ObjValue, RegType); //Record Value
+
+				switch (value)
+				{
+					case string s: hRegKey.SetValue(name, s, RegistryValueKind.String); break;
+					case string[] ss: hRegKey.SetValue(name, ss, RegistryValueKind.MultiString); break;
+					case Int32 i32: hRegKey.SetValue(name, i32, RegistryValueKind.DWord); break;
+					case Int64 i64: hRegKey.SetValue(name, i64, RegistryValueKind.QWord); break;
+					case byte[] data: hRegKey.SetValue(name, data, RegistryValueKind.Binary); break;
+
+					default: throw new ArgumentOutOfRangeException($"Unknown type of '{nameof(value)}' = '{typeof(T)}'");
+				}
+				//RegistryValueKind RegType = RegistryValueKind.DWord,
+				//hRegKey.SetValue(ValueName, ObjValue, RegType); //Record Value
 			}
 
 		}
@@ -3313,6 +3324,20 @@ namespace uom
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static void e_runInUIThread_AppendText(this TextBox ctl, string Text)
 				=> ctl.e_runInUIThread(() => { ctl.AppendText(Text); ctl.Update(); });
+
+			/// <summary>MT Safe</summary>
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static void e_runInUIThread_AppendLine(this TextBox ctl, string Text, int limitLinesCount = 0)
+				=> ctl.e_runInUIThread(() =>
+				{
+					if (limitLinesCount > 0)
+					{
+						//ctl.Lines = ctl.Lines.Skip(1).ToArray();
+						ctl.Lines = ctl.Lines.TakeLast(limitLinesCount).ToArray();
+					}
+					ctl.AppendText($"{Text}\r\n"); ctl.Update();
+				}
+				);
 
 			/// <summary>MT Safe</summary>
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -4422,8 +4447,6 @@ namespace uom
 		[DebuggerStepThrough]
 		internal static partial class Extensions_Controls_ProgressBar
 		{
-
-
 			internal enum PBM_STATES : int
 			{
 				PBST_NORMAL = 1,
@@ -5844,7 +5867,7 @@ namespace uom
 			#region Serialize
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_WriteCSV<T>(this TextWriter TW, string[] aColumnHeadersArray, IEnumerable<T> aRows, Func<T, string[]> cbGetRowValuesArray, string C_CSV_SEPARATOR = ";", bool MakeSafeChars = false)
+			internal static void e_WriteCSV<T>(this TextWriter TW, string[] aColumnHeadersArray, IEnumerable<T> aRows, Func<T, string[]> cbGetRowValuesArray, string C_CSV_SEPARATOR = ";", bool MakeSafeChars = false)
 			{
 
 				// Const C_CSV_SEPARATOR = ";"
@@ -5887,22 +5910,22 @@ namespace uom
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_SerializeBinary(this object SerializableObject, string FileName)
+			internal static void e_SerializeBinary(this object SerializableObject, string FileName)
 			{
 				using FileStream SM = FileName.e_ToFileInfo()!.OpenWrite();
-				SerializableObject.ExtSer_SerializeBinary(SM);
+				SerializableObject.e_SerializeBinary(SM);
 				SM.Flush();
 			}
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_SerializeBinary(this object SerializableObject, Stream SM)
+			internal static void e_SerializeBinary(this object SerializableObject, Stream SM)
 			{
-				byte[] abData = SerializableObject.ExtSer_SerializeBinary();
+				byte[] abData = SerializableObject.e_SerializeBinary();
 				SM.Write(abData, 0, abData.Length);
 			}
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static byte[] ExtSer_SerializeBinary(this object SerializableObject)
+			internal static byte[] e_SerializeBinary(this object SerializableObject)
 			{
 				using MemoryStream ms = new();
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
@@ -5912,7 +5935,7 @@ namespace uom
 			}
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T? ExtSer_DeSerializeBinary<T>(this Stream SM, T? DefaultValue = default, bool ThrowExceptionOnError = false)
+			internal static T? e_DeSerializeBinary<T>(this Stream SM, T? DefaultValue = default, bool ThrowExceptionOnError = false)
 			{
 				try
 				{
@@ -5929,47 +5952,47 @@ namespace uom
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T? ExtSer_DeSerializeBinary<T>(this byte[] SerializedData, T? DefaultValue = default, bool ThrowExceptionOnError = false)
+			internal static T? e_DeSerializeBinary<T>(this byte[] SerializedData, T? DefaultValue = default, bool ThrowExceptionOnError = false)
 			{
 				using MemoryStream ms = new(SerializedData);
-				return ms.ExtSer_DeSerializeBinary(DefaultValue, ThrowExceptionOnError);
+				return ms.e_DeSerializeBinary(DefaultValue, ThrowExceptionOnError);
 			}
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T? ExtSer_DeSerializeBinary<T>(this FileInfo File, T? DefaultValue = default, bool ThrowExceptionOnError = false)
+			internal static T? e_DeSerializeBinary<T>(this FileInfo File, T? DefaultValue = default, bool ThrowExceptionOnError = false)
 			{
 				using FileStream fs = File.OpenRead();
-				return fs.ExtSer_DeSerializeBinary(DefaultValue, ThrowExceptionOnError);
+				return fs.e_DeSerializeBinary(DefaultValue, ThrowExceptionOnError);
 			}
 
 			#endregion
 
 			#region XML Serialization
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_SerializeXML(this object SerializableObject, string FileName)
-				=> SerializableObject.ExtSer_SerializeXML(FileName, Encoding.Unicode);
+			internal static void e_SerializeXML(this object SerializableObject, string FileName)
+				=> SerializableObject.e_SerializeXML(FileName, Encoding.Unicode);
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_SerializeXML(this object SerializableObject, string FileName, Encoding E)
-				=> SerializableObject.ExtSer_SerializeXML(new FileInfo(FileName), E);
+			internal static void e_SerializeXML(this object SerializableObject, string FileName, Encoding E)
+				=> SerializableObject.e_SerializeXML(new FileInfo(FileName), E);
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_SerializeXML(this object SerializableObject, FileInfo File, Encoding E)
+			internal static void e_SerializeXML(this object SerializableObject, FileInfo File, Encoding E)
 			{
 				using FileStream fs = File.Create();
-				SerializableObject.ExtSer_SerializeXML(fs, E);
+				SerializableObject.e_SerializeXML(fs, E);
 			}
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_SerializeXML(this object SerializableObject, Stream S)
-				=> SerializableObject.ExtSer_SerializeXML(S, Encoding.Unicode);
+			internal static void e_SerializeXML(this object SerializableObject, Stream S)
+				=> SerializableObject.e_SerializeXML(S, Encoding.Unicode);
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void ExtSer_SerializeXML(this object SerializableObject, Stream S, Encoding E)
+			internal static void e_SerializeXML(this object SerializableObject, Stream S, Encoding E)
 			{
 				var SW = new StreamWriter(S, E);
 				var XS = new System.Xml.Serialization.XmlSerializer(SerializableObject.GetType());
@@ -5979,7 +6002,7 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static string ExtSer_SerializeXML(this object SerializableObject)
+			internal static string e_SerializeXML(this object SerializableObject)
 			{
 				StringBuilder sb = new();
 				using (StringWriter sw = new(sb))
@@ -5993,7 +6016,7 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static byte[] ExtSer_SerializeXML(this System.Data.DataSet dts)
+			internal static byte[] e_SerializeXML(this System.Data.DataSet dts)
 			{
 				using MemoryStream ms = new();
 				dts.WriteXml(ms, System.Data.XmlWriteMode.IgnoreSchema);
@@ -6002,7 +6025,7 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T? ExtSer_DeSerializeXML<T>(this string XMLText, T? DefaultValue = default, bool ThrowExceptionOnError = false)
+			internal static T? e_DeSerializeXML<T>(this string XMLText, T? DefaultValue = default, bool ThrowExceptionOnError = false)
 			{
 				try
 				{
@@ -6022,7 +6045,7 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T? ExtSer_DeSerializeXML<T>(
+			internal static T? e_DeSerializeXML<T>(
 				this Stream SerializedStream,
 				T? DefaultValue = default,
 				bool ThrowExceptionOnError = false)
@@ -6041,14 +6064,14 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T? ExtSer_DeSerializeXMLFile<T>(
+			internal static T? e_DeSerializeXMLFile<T>(
 				this string sFile,
 				T? DefaultValue = default,
 				bool ThrowExceptionOnError = false)
 			{
 				try
 				{
-					return sFile.e_ToFileInfo()!.ExtSer_DeSerializeXML(DefaultValue, ThrowExceptionOnError);
+					return sFile.e_ToFileInfo()!.e_DeSerializeXML(DefaultValue, ThrowExceptionOnError);
 				}
 				catch
 				{
@@ -6059,7 +6082,7 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T? ExtSer_DeSerializeXML<T>(
+			internal static T? e_DeSerializeXML<T>(
 				this FileInfo File,
 				T? DefaultValue = default,
 				bool ThrowExceptionOnError = false)
@@ -6067,7 +6090,7 @@ namespace uom
 				try
 				{
 					using FileStream fs = File.OpenRead();
-					return fs.ExtSer_DeSerializeXML<T>(ThrowExceptionOnError: ThrowExceptionOnError);
+					return fs.e_DeSerializeXML<T>(ThrowExceptionOnError: ThrowExceptionOnError);
 				}
 				catch
 				{
@@ -6078,13 +6101,13 @@ namespace uom
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static T[] ExtSer_DeSerializeXMLArrays<T>(this FileInfo[] fiFiles, bool ThrowExceptionOnError = false)
+			internal static T[] e_DeSerializeXMLArrays<T>(this FileInfo[] fiFiles, bool ThrowExceptionOnError = false)
 			{
 				if (!fiFiles.Any()) return Array.Empty<T>();
 				var lTotalDeserializedObjects = new List<T>();
 				foreach (var fiFileToDeserialize in fiFiles)
 				{
-					var ArrayOfDeserializedObjects = fiFileToDeserialize.ExtSer_DeSerializeXML<T[]>(ThrowExceptionOnError: ThrowExceptionOnError);
+					var ArrayOfDeserializedObjects = fiFileToDeserialize.e_DeSerializeXML<T[]>(ThrowExceptionOnError: ThrowExceptionOnError);
 					if (ArrayOfDeserializedObjects != null && ArrayOfDeserializedObjects.Any())
 					{
 						lTotalDeserializedObjects.AddRange(ArrayOfDeserializedObjects);
@@ -6097,13 +6120,13 @@ namespace uom
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static List<T> ExtSer_DeSerializeXMLLists<T>(this FileInfo[] fiFiles, bool ThrowExceptionOnError = false)
+			internal static List<T> e_DeSerializeXMLLists<T>(this FileInfo[] fiFiles, bool ThrowExceptionOnError = false)
 			{
 				var lTotalDeserializedObjects = new List<T>();
 				if (!fiFiles.Any()) return lTotalDeserializedObjects;
 				foreach (var fiFileToDeserialize in fiFiles)
 				{
-					var ListOfDeserializedObjects = fiFileToDeserialize.ExtSer_DeSerializeXML<List<T>>(ThrowExceptionOnError: ThrowExceptionOnError);
+					var ListOfDeserializedObjects = fiFileToDeserialize.e_DeSerializeXML<List<T>>(ThrowExceptionOnError: ThrowExceptionOnError);
 					if (ListOfDeserializedObjects != null && ListOfDeserializedObjects.Any())
 					{
 						lTotalDeserializedObjects.AddRange(ListOfDeserializedObjects);
@@ -6122,7 +6145,7 @@ namespace uom
 			{
 				throw new NotImplementedException();
 
-				//string sXML = SerializableObject.ExtSer_SerializeXML();
+				//string sXML = SerializableObject.e_SerializeXML();
 				//UOM.Settings.mAppSettings.SaveSetting(ParamName, sXML, ThrowExceptionIfError: true);
 			}
 
@@ -6135,7 +6158,7 @@ namespace uom
 				//string sXML = UOM.Settings.mAppSettings.GetSetting_String(ParamName, null, ThrowExceptionIfError: false).Value;
 				//if (sXML.e_IsNOTNullOrWhiteSpace())
 				//{
-				//    var Obj = sXML.ExtSer_DeSerializeXML(DefaultValue);
+				//    var Obj = sXML.e_DeSerializeXML(DefaultValue);
 				//    return Obj;
 				//}
 				//else
@@ -6150,25 +6173,25 @@ namespace uom
 
 			/// <summary>Клонирует объект черех XML сериализацию в памяти</summary>
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static T? ExtSer_CloneViaXMLSerialization<T>(this T O)
+			public static T? e_CloneViaXMLSerialization<T>(this T O)
 			{
 				_ = O ?? throw new ArgumentNullException(nameof(O));
 				using MemoryStream ms = new();
-				O.ExtSer_SerializeXML(ms);
+				O.e_SerializeXML(ms);
 				ms.Seek(0L, SeekOrigin.Begin);
-				return ms.ExtSer_DeSerializeXML<T>(ThrowExceptionOnError: true);
+				return ms.e_DeSerializeXML<T>(ThrowExceptionOnError: true);
 			}
 
 
 			/// <summary>Клонирует объект системным методом CLONE, возвращая объект такого-же типа, что и исходный</summary>
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static T ExtSer_CloneAsSomeType<T>(this T rSourceObject) where T : ICloneable
+			public static T e_CloneAsSomeType<T>(this T rSourceObject) where T : ICloneable
 				=> (T)rSourceObject.Clone();
 
 
 			/// <summary>Клонирует объект системным методом CLONE, возвращая объект такого-же типа, что и исходный</summary>
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static Icon ExtSer_CloneViaGDICopyIcon(this Icon rSource)
+			public static Icon e_CloneViaGDICopyIcon(this Icon rSource)
 			{
 				throw new NotImplementedException();
 
@@ -6188,7 +6211,7 @@ namespace uom
 
 			/// <summary>Клонирует Image через GDI+.DrawImage</summary>
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static Bitmap ExtSer_CloneViaDrawImage(this System.Drawing.Image imgSrc)
+			public static Bitmap e_CloneViaDrawImage(this System.Drawing.Image imgSrc)
 			{
 				var bmNew = new Bitmap(imgSrc.Width, imgSrc.Height);
 				using (var G = Graphics.FromImage(bmNew))
@@ -6202,7 +6225,7 @@ namespace uom
 
 			/// <summary>Клонирует объект системным методом CLONE, возвращая объект такого-же типа, что и исходный</summary>
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static Icon ExtSer_CloneViaMemStream(this Icon rSource)
+			public static Icon e_CloneViaMemStream(this Icon rSource)
 			{
 				using MemoryStream ms = new();
 				rSource.Save(ms);
@@ -6213,7 +6236,7 @@ namespace uom
 
 			/// <summary>Клонирует объект системным методом CLONE, возвращая объект такого-же типа, что и исходный</summary>
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static Bitmap ExtSer_CloneViaMemStream(this Bitmap rSource)
+			public static Bitmap e_CloneViaMemStream(this Bitmap rSource)
 			{
 				using MemoryStream ms = new();
 				rSource.Save(ms, System.Drawing.Imaging.ImageFormat.MemoryBmp);

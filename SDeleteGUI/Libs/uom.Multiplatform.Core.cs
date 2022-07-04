@@ -17,6 +17,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using uom.Extensions;
 
 #nullable enable
@@ -790,14 +791,6 @@ private static async Task<int> AnotherSlowCalculation()
 /// (C) UOM 2000-2021 </summary>
 namespace uom
 {
-
-	/// <summary>CodeSamples</summary>
-	internal static class CODE_SAMPLES
-	{
-
-
-	}
-
 
 	/// <summary>Constants</summary>
 	internal static partial class constants

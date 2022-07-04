@@ -1,8 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+global using System;
+global using System.Collections.Generic;
+global using System.Diagnostics;
+global using System.IO;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using System.Windows.Forms;
+
+global using uom.Extensions;
+
+using System.Text;
+
+
+#nullable enable
 
 namespace SDeleteGUI
 {
