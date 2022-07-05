@@ -3,17 +3,17 @@ using System.Text;
 using uom;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace SDeleteGUI.Core.SDelete
 {
 	internal class SDeleteManager
 	{
-		private const string C_SDBIN_DIR = @"C:\ProgramData\chocolatey\lib\sysinternals\tools";
-		private const string C_SDBIN_FILE64 = @"sdelete64.exe";
-		private const string C_SDBIN_FILE = @"sdelete.exe";
+		internal const string C_SDBIN_FILE64 = @"sdelete64.exe";
+		internal const string C_SDBIN_FILE = @"sdelete.exe";
+		private const string C_DEFAULT_CHOCOLATEY_SDBIN_DIR = @"C:\ProgramData\chocolatey\lib\sysinternals\tools";
 
 		public readonly FileInfo SDeleteBinary;
-
 
 		/*
 		usage: sdelete [-p passes] [-r] [-s] [-q] <file or directory> [...]
@@ -31,13 +31,15 @@ namespace SDeleteGUI.Core.SDelete
 		-nobanner  Do not display the startup banner and copyright message.
 		 */
 
-		private const string C_ARG_CLEAN_FREE_SPACE = @"-c";
-		private const string C_ARG_FORCE_PATH = @"-f";
-		private const string C_ARG_PASSES = @"-p";
-		private const string C_ARG_REMOVE_RO = @"-r";
-		private const string C_ARG_RECURSE = @"-s";
-		private const string C_ARG_ZERO_FREE_SPACE = @"-z";
-		private const string C_ARG_NO_BANNER = @"-nobanner";
+		internal const string C_ARG_CLEAN_FREE_SPACE = @"-c";
+		internal const string C_ARG_ZERO_FREE_SPACE = @"-z";
+
+		internal const string C_ARG_FORCE_PATH = @"-f";
+		internal const string C_ARG_PASSES = @"-p";
+		internal const string C_ARG_REMOVE_RO = @"-r";
+		internal const string C_ARG_RECURSE = @"-s";
+		internal const string C_ARG_NO_BANNER = @"-nobanner";
+		internal const string C_ARG_ACCEPT_LICENSE = @"/accepteula";
 
 		private Process? runningProcess = null;
 		private Thread? _thCore = null;
@@ -48,7 +50,7 @@ namespace SDeleteGUI.Core.SDelete
 		public event EventHandler<ProgressInfo> OutputProgress = delegate { };
 		public event DataReceivedEventHandler Error = delegate { };
 
-		public enum CleanModes
+		public enum CleanModes : int
 		{
 			/// <summary>Zero free space (good for virtual disk optimization)</summary>
 			Zero = 0,
@@ -56,28 +58,39 @@ namespace SDeleteGUI.Core.SDelete
 			Clean
 		}
 
-		public SDeleteManager()
+		public SDeleteManager(Func<FileInfo> binaryPathSpecifer)
 		{
 			const string C_LAST_KNOWN_SDELETE_NAME = "LastKnownSDeletePath";
 
 			var knownBinPath = Application.UserAppDataRegistry.e_GetValue_StringOrEmpty(C_LAST_KNOWN_SDELETE_NAME);
 			if (knownBinPath == null || !File.Exists(knownBinPath))
 			{
-				DirectoryInfo diBin = new(C_SDBIN_DIR);
-				if (!diBin.Exists)
-					throw new Exception($"Not found dir '{C_SDBIN_DIR}'!");
+				DirectoryInfo diChocolateySDeleteDir = new(C_DEFAULT_CHOCOLATEY_SDBIN_DIR);
+				if (diChocolateySDeleteDir.Exists)
+				{
+					var found64 = diChocolateySDeleteDir.EnumerateFiles(C_SDBIN_FILE64).Any();
+					var found32 = diChocolateySDeleteDir.EnumerateFiles(C_SDBIN_FILE).Any();
 
-				var found64 = diBin.EnumerateFiles(C_SDBIN_FILE64).Any();
-				var found32 = diBin.EnumerateFiles(C_SDBIN_FILE).Any();
-
-				if (!found64 && !found32)
-					throw new Exception($"Not found SDelete binary file '{C_SDBIN_FILE}'!");
-
-				knownBinPath = Path.Combine(diBin.FullName,
-					found64
-					? C_SDBIN_FILE64
-					: C_SDBIN_FILE);
+					if (found64 || found32)
+					{
+						knownBinPath = Path.Combine(diChocolateySDeleteDir.FullName,
+							found64
+							? C_SDBIN_FILE64
+							: C_SDBIN_FILE);
+					}
+				}
 			}
+
+			if (knownBinPath == null || !File.Exists(knownBinPath))
+			{
+				FileInfo fiUserBinPath = binaryPathSpecifer.Invoke();
+				if (fiUserBinPath.Exists)
+					knownBinPath = fiUserBinPath.FullName;
+			}
+
+			if (knownBinPath == null || !File.Exists(knownBinPath))
+				throw new Exception($"Not found SDelete binary file '{C_SDBIN_FILE}'!");
+
 			SDeleteBinary = new(knownBinPath);
 			Application.UserAppDataRegistry.e_SetValue(C_LAST_KNOWN_SDELETE_NAME, SDeleteBinary.FullName);
 		}
@@ -91,7 +104,7 @@ namespace SDeleteGUI.Core.SDelete
 		public void Run(uint passes, WmiDisk disk, CleanModes cm)
 		{
 			if (disk.Partitions > 0) throw new Exception($"Make sure that the disk '{disk}' has no file system volumes!");
-			string args = @$"-{cm.ToString().ToLower()[0]} {disk.Index}";
+			string args = $"{cm.ToArgs()} {disk.Index}";
 			StartSDeleteCore(passes, args);
 		}
 
@@ -99,8 +112,7 @@ namespace SDeleteGUI.Core.SDelete
 		/// <summary>Zeroing free space on Disk</summary>
 		public void Run(uint passes, char disk, CleanModes cm)
 		{
-			//string args = @$"-f -r -s {disk} -{cm.ToString().ToLower()[0]}";
-			string args = @$"-f -r -s -{cm.ToString().ToLower()[0]} {disk}:";
+			string args = @$"{C_ARG_FORCE_PATH} {C_ARG_REMOVE_RO} {C_ARG_RECURSE} {cm.ToArgs()} {disk}:";
 			StartSDeleteCore(passes, args);
 		}
 
@@ -110,16 +122,13 @@ namespace SDeleteGUI.Core.SDelete
 		{
 			if (!dirToClean.Exists) throw new Exception($"Directory '{dirToClean}' not found!");
 
-			string args = "";
+			string args = $"{C_ARG_FORCE_PATH} {C_ARG_REMOVE_RO} {C_ARG_RECURSE} ";
 			bool isRoot = dirToClean.ToString().ToLower() == dirToClean.Root.ToString().ToLower();
 			if (isRoot)
-			{
-				args += @$"-f -r -s ""{dirToClean.FullName[0]}:\*""";
-			}
+				args += @$"""{dirToClean.FullName[0]}:\*""";
 			else
-			{
-				args += @$"-f -r -s ""{dirToClean}""";
-			}
+				args += @$"""{dirToClean}""";
+
 			StartSDeleteCore(passes, args);
 		}
 
@@ -133,8 +142,10 @@ namespace SDeleteGUI.Core.SDelete
 				if (!fi.Exists) throw new Exception($"File '{fi}' not found!");
 			}
 
-			string args = @"-r " + string.Join(" ", filesToClean
-				.Select(fi => (constants.CC_QUOTE + fi.FullName + constants.CC_QUOTE)).ToArray());
+			string args = C_ARG_REMOVE_RO + " "
+				+ string.Join(" ", filesToClean
+				.Select(fi => (constants.CC_QUOTE + fi.FullName + constants.CC_QUOTE))
+				.ToArray());
 
 			StartSDeleteCore(passes, args);
 		}
@@ -142,8 +153,7 @@ namespace SDeleteGUI.Core.SDelete
 
 		private void StartSDeleteCore(uint passes, string SDeleteArgs)
 		{
-
-			SDeleteArgs = @$"/accepteula -p {passes} " + SDeleteArgs;
+			SDeleteArgs = @$"{C_ARG_ACCEPT_LICENSE} {C_ARG_PASSES} {passes} " + SDeleteArgs;
 
 
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -155,7 +165,6 @@ namespace SDeleteGUI.Core.SDelete
 
 			//ILogger logger = LogManager.GetCurrentClassLogger();
 			//logger.Debug($"*** RunConsole '{fiExe.FullName}', Args: '{arguments}'");
-
 			Debug.WriteLine($"*** RunConsole '{SDeleteBinary}', Args: '{SDeleteArgs}'");
 
 			ProcessStartInfo psi = new()

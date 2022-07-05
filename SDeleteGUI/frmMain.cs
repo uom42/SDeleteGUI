@@ -59,17 +59,52 @@ namespace SDeleteGUI
 
 		private async Task _Load()
 		{
-			//InitSDeleteEngine();
-			_sdmgr = new SDeleteManager();
-			await InitUI();
-		}
 
+			Func<FileInfo> cbAskUserForBinary = new(() =>
+			{
+				//if (ofd.ShowDialog() != DialogResult.OK) throw new NotImplementedException();
 
-		private async Task InitUI()
-		{
+				string sMsg = @$"Sysinternals '{SDeleteManager.C_SDBIN_FILE64}' or '{SDeleteManager.C_SDBIN_FILE}' was not found in well-known locations!
+
+Do you want to specify it manualy ?";
+				if (MessageBox.Show(
+					sMsg,
+					Application.ProductName,
+					MessageBoxButtons.YesNo,
+					MessageBoxIcon.Question
+					) != DialogResult.Yes)
+					throw new NotImplementedException();
+
+				using OpenFileDialog ofd = new()
+				{
+					AddExtension = true,
+					AutoUpgradeEnabled = true,
+					CheckFileExists = true,
+					CheckPathExists = true,
+					DereferenceLinks = true,
+					Filter = $"{SDeleteManager.C_SDBIN_FILE64}|{SDeleteManager.C_SDBIN_FILE64}"
+				};
+				if (ofd.ShowDialog() != DialogResult.OK) throw new NotImplementedException();
+				return new(ofd.FileName);
+			});
+
 			try
 			{
-				txtSDeleteBinPath.Text = _sdmgr!.SDeleteBinary.FullName;
+				_sdmgr = new SDeleteManager(cbAskUserForBinary);
+			}
+
+			catch (Exception ex)
+			{
+				if (ex is not NotImplementedException)//Not user canceled error
+					ex.FIX_ERROR(true);
+
+				Application.Exit();
+				return;
+			}
+
+			try
+			{
+				lblSDeleteBinPath.Text = _sdmgr!.SDeleteBinary.FullName;
 				//txtSource_Dir.Text = @"E:\_222 — копия";
 
 
@@ -84,7 +119,7 @@ namespace SDeleteGUI
 			}
 			catch (Exception ex)
 			{
-				txtSDeleteBinPath.Text = ex.Message;
+				lblSDeleteBinPath.Text = ex.Message;
 				return;
 			}
 			finally

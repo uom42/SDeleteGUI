@@ -7,7 +7,14 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ApplicationIcon>trash (4).ico</ApplicationIcon>
+
 		<Version>1.1.0.0</Version>
+		<AssemblyVersion>1.1.0.0</AssemblyVersion>
+		<FileVersion>1.1.0.1</FileVersion>
+
+		<AssemblyTitle>SDelete GUI</AssemblyTitle>
+		<Copyright>(C)2022 UOM</Copyright>
+		<Description>GUI for SysInternals sdelete tool</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
