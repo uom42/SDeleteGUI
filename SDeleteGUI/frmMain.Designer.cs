@@ -108,7 +108,7 @@
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tlpParams.Size = new System.Drawing.Size(727, 299);
+			this.tlpParams.Size = new System.Drawing.Size(796, 299);
 			this.tlpParams.TabIndex = 0;
 			// 
 			// label1
@@ -118,7 +118,7 @@
 			this.label1.Dock = System.Windows.Forms.DockStyle.Top;
 			this.label1.Location = new System.Drawing.Point(3, 0);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(691, 15);
+			this.label1.Size = new System.Drawing.Size(760, 15);
 			this.label1.TabIndex = 0;
 			this.label1.Text = "SDelete[64] binary location:";
 			// 
@@ -128,7 +128,7 @@
 			this.lblSDeleteBinPath.Dock = System.Windows.Forms.DockStyle.Top;
 			this.lblSDeleteBinPath.Location = new System.Drawing.Point(23, 15);
 			this.lblSDeleteBinPath.Name = "lblSDeleteBinPath";
-			this.lblSDeleteBinPath.Size = new System.Drawing.Size(671, 23);
+			this.lblSDeleteBinPath.Size = new System.Drawing.Size(740, 23);
 			this.lblSDeleteBinPath.TabIndex = 1;
 			// 
 			// optSource_Dir
@@ -162,7 +162,7 @@
 			this.txtSource_Dir.Dock = System.Windows.Forms.DockStyle.Top;
 			this.txtSource_Dir.Location = new System.Drawing.Point(249, 124);
 			this.txtSource_Dir.Name = "txtSource_Dir";
-			this.txtSource_Dir.Size = new System.Drawing.Size(445, 23);
+			this.txtSource_Dir.Size = new System.Drawing.Size(514, 23);
 			this.txtSource_Dir.TabIndex = 7;
 			// 
 			// txtSource_Files
@@ -173,7 +173,7 @@
 			this.txtSource_Files.Location = new System.Drawing.Point(249, 153);
 			this.txtSource_Files.Name = "txtSource_Files";
 			this.txtSource_Files.ReadOnly = true;
-			this.txtSource_Files.Size = new System.Drawing.Size(445, 23);
+			this.txtSource_Files.Size = new System.Drawing.Size(514, 23);
 			this.txtSource_Files.TabIndex = 9;
 			// 
 			// label2
@@ -183,14 +183,14 @@
 			this.label2.Dock = System.Windows.Forms.DockStyle.Top;
 			this.label2.Location = new System.Drawing.Point(3, 48);
 			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(721, 15);
+			this.label2.Size = new System.Drawing.Size(790, 15);
 			this.label2.TabIndex = 6;
 			this.label2.Text = "What to clean:";
 			// 
 			// btnSource_DisplaySelectionUI
 			// 
 			this.btnSource_DisplaySelectionUI.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.btnSource_DisplaySelectionUI.Location = new System.Drawing.Point(700, 124);
+			this.btnSource_DisplaySelectionUI.Location = new System.Drawing.Point(769, 124);
 			this.btnSource_DisplaySelectionUI.Name = "btnSource_DisplaySelectionUI";
 			this.tlpParams.SetRowSpan(this.btnSource_DisplaySelectionUI, 2);
 			this.btnSource_DisplaySelectionUI.Size = new System.Drawing.Size(24, 52);
@@ -205,7 +205,7 @@
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
 			this.panel1.Location = new System.Drawing.Point(3, 182);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(721, 4);
+			this.panel1.Size = new System.Drawing.Size(790, 4);
 			this.panel1.TabIndex = 8;
 			// 
 			// panel2
@@ -215,7 +215,7 @@
 			this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
 			this.panel2.Location = new System.Drawing.Point(3, 41);
 			this.panel2.Name = "panel2";
-			this.panel2.Size = new System.Drawing.Size(721, 4);
+			this.panel2.Size = new System.Drawing.Size(790, 4);
 			this.panel2.TabIndex = 9;
 			// 
 			// label3
@@ -268,7 +268,7 @@
 			this.tlpCleanModes.RowCount = 2;
 			this.tlpCleanModes.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpCleanModes.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tlpCleanModes.Size = new System.Drawing.Size(701, 50);
+			this.tlpCleanModes.Size = new System.Drawing.Size(770, 50);
 			this.tlpCleanModes.TabIndex = 12;
 			// 
 			// optCleanMode_Zero
@@ -323,7 +323,7 @@
 			this.cboSource_PhyDisk.FormattingEnabled = true;
 			this.cboSource_PhyDisk.Location = new System.Drawing.Point(249, 66);
 			this.cboSource_PhyDisk.Name = "cboSource_PhyDisk";
-			this.cboSource_PhyDisk.Size = new System.Drawing.Size(445, 23);
+			this.cboSource_PhyDisk.Size = new System.Drawing.Size(514, 23);
 			this.cboSource_PhyDisk.TabIndex = 2;
 			// 
 			// panel3
@@ -333,7 +333,7 @@
 			this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
 			this.panel3.Location = new System.Drawing.Point(3, 292);
 			this.panel3.Name = "panel3";
-			this.panel3.Size = new System.Drawing.Size(721, 4);
+			this.panel3.Size = new System.Drawing.Size(790, 4);
 			this.panel3.TabIndex = 22;
 			// 
 			// optSource_LogDisk
@@ -355,13 +355,13 @@
 			this.cboSource_LogDisk.FormattingEnabled = true;
 			this.cboSource_LogDisk.Location = new System.Drawing.Point(249, 95);
 			this.cboSource_LogDisk.Name = "cboSource_LogDisk";
-			this.cboSource_LogDisk.Size = new System.Drawing.Size(445, 23);
+			this.cboSource_LogDisk.Size = new System.Drawing.Size(514, 23);
 			this.cboSource_LogDisk.TabIndex = 4;
 			// 
 			// btnSource_Refresh
 			// 
 			this.btnSource_Refresh.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.btnSource_Refresh.Location = new System.Drawing.Point(700, 66);
+			this.btnSource_Refresh.Location = new System.Drawing.Point(769, 66);
 			this.btnSource_Refresh.Name = "btnSource_Refresh";
 			this.tlpParams.SetRowSpan(this.btnSource_Refresh, 2);
 			this.btnSource_Refresh.Size = new System.Drawing.Size(24, 52);
@@ -376,21 +376,21 @@
 			this.lstLog.ItemHeight = 15;
 			this.lstLog.Location = new System.Drawing.Point(3, 3);
 			this.lstLog.Name = "lstLog";
-			this.lstLog.Size = new System.Drawing.Size(721, 159);
+			this.lstLog.Size = new System.Drawing.Size(790, 190);
 			this.lstLog.TabIndex = 0;
 			// 
 			// pbProgress
 			// 
 			this.pbProgress.Dock = System.Windows.Forms.DockStyle.Top;
-			this.pbProgress.Location = new System.Drawing.Point(3, 176);
+			this.pbProgress.Location = new System.Drawing.Point(3, 207);
 			this.pbProgress.Name = "pbProgress";
-			this.pbProgress.Size = new System.Drawing.Size(721, 8);
+			this.pbProgress.Size = new System.Drawing.Size(790, 8);
 			this.pbProgress.TabIndex = 25;
 			// 
 			// btnStartStop
 			// 
 			this.btnStartStop.Dock = System.Windows.Forms.DockStyle.Right;
-			this.btnStartStop.Location = new System.Drawing.Point(597, 192);
+			this.btnStartStop.Location = new System.Drawing.Point(666, 223);
 			this.btnStartStop.Name = "btnStartStop";
 			this.btnStartStop.Size = new System.Drawing.Size(127, 42);
 			this.btnStartStop.TabIndex = 1;
@@ -412,19 +412,21 @@
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 8F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
-			this.tlpDown.Size = new System.Drawing.Size(727, 237);
+			this.tlpDown.Size = new System.Drawing.Size(796, 268);
 			this.tlpDown.TabIndex = 1;
 			// 
 			// frmMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(759, 568);
+			this.ClientSize = new System.Drawing.Size(828, 599);
 			this.Controls.Add(this.tlpDown);
 			this.Controls.Add(this.tlpParams);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.MinimumSize = new System.Drawing.Size(600, 500);
 			this.Name = "frmMain";
 			this.Padding = new System.Windows.Forms.Padding(16);
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "frmMain";
 			this.tlpParams.ResumeLayout(false);
 			this.tlpParams.PerformLayout();
