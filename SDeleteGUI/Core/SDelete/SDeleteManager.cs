@@ -4,6 +4,8 @@ using uom;
 using System.Threading;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Security.Cryptography;
+using NLog;
 
 namespace SDeleteGUI.Core.SDelete
 {
@@ -12,6 +14,8 @@ namespace SDeleteGUI.Core.SDelete
 		internal const string C_SDBIN_FILE64 = @"sdelete64.exe";
 		internal const string C_SDBIN_FILE = @"sdelete.exe";
 		private const string C_DEFAULT_CHOCOLATEY_SDBIN_DIR = @"C:\ProgramData\chocolatey\lib\sysinternals\tools";
+
+		private Lazy<Logger> _logger = new(LogManager.GetCurrentClassLogger());
 
 		public readonly FileInfo SDeleteBinary;
 
@@ -62,7 +66,11 @@ namespace SDeleteGUI.Core.SDelete
 		{
 			const string C_LAST_KNOWN_SDELETE_NAME = "LastKnownSDeletePath";
 
+			_logger.Value.Debug($"NEW SDeleteManager");
+
 			var knownBinPath = Application.UserAppDataRegistry.e_GetValue_StringOrEmpty(C_LAST_KNOWN_SDELETE_NAME);
+			_logger.Value.Debug($"knownBinPath: {knownBinPath}");
+
 			if (knownBinPath == null || !File.Exists(knownBinPath))
 			{
 				DirectoryInfo diChocolateySDeleteDir = new(C_DEFAULT_CHOCOLATEY_SDBIN_DIR);
@@ -73,29 +81,33 @@ namespace SDeleteGUI.Core.SDelete
 
 					if (found64 || found32)
 					{
+
 						knownBinPath = Path.Combine(diChocolateySDeleteDir.FullName,
 							found64
 							? C_SDBIN_FILE64
 							: C_SDBIN_FILE);
+
+						_logger.Value.Debug($"Found in Chocolatey well-known dir: {knownBinPath}");
 					}
 				}
 			}
 
 			if (knownBinPath == null || !File.Exists(knownBinPath))
 			{
+				_logger.Value.Debug($"Still not found, ask user...");
 				FileInfo fiUserBinPath = binaryPathSpecifer.Invoke();
 				if (fiUserBinPath.Exists)
 					knownBinPath = fiUserBinPath.FullName;
 			}
 
+			_logger.Value.Debug(knownBinPath);
 			if (knownBinPath == null || !File.Exists(knownBinPath))
 				throw new Exception($"Not found SDelete binary file '{C_SDBIN_FILE}'!");
 
 			SDeleteBinary = new(knownBinPath);
 			Application.UserAppDataRegistry.e_SetValue(C_LAST_KNOWN_SDELETE_NAME, SDeleteBinary.FullName);
+			_logger.Value.Debug($"Saving registry setting value '{C_LAST_KNOWN_SDELETE_NAME}' = '{SDeleteBinary}'");
 		}
-
-
 
 
 		/// <summary>Clean entrie Physical disk
@@ -103,6 +115,7 @@ namespace SDeleteGUI.Core.SDelete
 		/// </summary>
 		public void Run(uint passes, WmiDisk disk, CleanModes cm)
 		{
+			_logger.Value.Debug($"Run_Clean: Physical disk, Passes '{passes}', disk = '{disk}', CleanModes = '{cm}'");
 			if (disk.Partitions > 0) throw new Exception($"Make sure that the disk '{disk}' has no file system volumes!");
 			string args = $"{cm.ToArgs()} {disk.Index}";
 			StartSDeleteCore(passes, args);
@@ -112,6 +125,7 @@ namespace SDeleteGUI.Core.SDelete
 		/// <summary>Zeroing free space on Disk</summary>
 		public void Run(uint passes, char disk, CleanModes cm)
 		{
+			_logger.Value.Debug($"Run_Clean: Passes '{passes}', Disk_Char = '{disk}', CleanModes = '{cm}'");
 			string args = @$"{C_ARG_FORCE_PATH} {C_ARG_REMOVE_RO} {C_ARG_RECURSE} {cm.ToArgs()} {disk}:";
 			StartSDeleteCore(passes, args);
 		}
@@ -120,6 +134,7 @@ namespace SDeleteGUI.Core.SDelete
 		/// <summary>Clean Directory on disk</summary>
 		public void Run(uint passes, DirectoryInfo dirToClean)
 		{
+			_logger.Value.Debug($"Run_Clean: Passes '{passes}', dirToClean = '{dirToClean}'");
 			if (!dirToClean.Exists) throw new Exception($"Directory '{dirToClean}' not found!");
 
 			string args = $"{C_ARG_FORCE_PATH} {C_ARG_REMOVE_RO} {C_ARG_RECURSE} ";
@@ -135,6 +150,13 @@ namespace SDeleteGUI.Core.SDelete
 		/// <summary>Clean Directory on disk</summary>
 		public void Run(uint passes, FileInfo[] filesToClean)
 		{
+
+			string allFiles = string.Join(" ", filesToClean
+				.Select(fi => (constants.CC_QUOTE + fi.FullName + constants.CC_QUOTE))
+				.ToArray());
+
+			_logger.Value.Debug($"Run_Clean: Passes '{passes}', filesToClean = '{allFiles}'");
+
 			if (!filesToClean.Any()) throw new ArgumentNullException(nameof(filesToClean));
 			foreach (FileInfo fi in filesToClean)
 			{
@@ -142,11 +164,7 @@ namespace SDeleteGUI.Core.SDelete
 				if (!fi.Exists) throw new Exception($"File '{fi}' not found!");
 			}
 
-			string args = C_ARG_REMOVE_RO + " "
-				+ string.Join(" ", filesToClean
-				.Select(fi => (constants.CC_QUOTE + fi.FullName + constants.CC_QUOTE))
-				.ToArray());
-
+			string args = C_ARG_REMOVE_RO + " " + allFiles;
 			StartSDeleteCore(passes, args);
 		}
 
@@ -155,6 +173,7 @@ namespace SDeleteGUI.Core.SDelete
 		{
 			SDeleteArgs = @$"{C_ARG_ACCEPT_LICENSE} {C_ARG_PASSES} {passes} " + SDeleteArgs;
 
+			_logger.Value.Debug($"Run_Clean: StartSDeleteCore. Passes '{passes}', SDeleteArgs = '{SDeleteArgs}'");
 
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -164,8 +183,9 @@ namespace SDeleteGUI.Core.SDelete
 			runningProcess = null;
 
 			//ILogger logger = LogManager.GetCurrentClassLogger();
-			//logger.Debug($"*** RunConsole '{fiExe.FullName}', Args: '{arguments}'");
-			Debug.WriteLine($"*** RunConsole '{SDeleteBinary}', Args: '{SDeleteArgs}'");
+			string sLog = $"*** RunConsole '{SDeleteBinary}', Args: '{SDeleteArgs}'";
+			Debug.WriteLine(sLog);
+			_logger.Value.Debug(sLog);
 
 			ProcessStartInfo psi = new()
 			{
@@ -191,7 +211,7 @@ namespace SDeleteGUI.Core.SDelete
 
 			_thCore = new Thread(CoreThreadProc)
 			{
-				Name = "safd",
+				Name = "Thread waiting for SDelete binary to close",
 				IsBackground = true
 			};
 			_evtCleanFinished = new AutoResetEvent(false);
@@ -200,6 +220,8 @@ namespace SDeleteGUI.Core.SDelete
 
 		private void CoreConnect()
 		{
+			_logger.Value.Debug("CoreConnect");
+
 			if (runningProcess == null) throw new ArgumentNullException(nameof(runningProcess));
 
 			runningProcess.OutputDataReceived += OnCore_Data;
@@ -212,6 +234,8 @@ namespace SDeleteGUI.Core.SDelete
 
 		private void OnCore_Data(object sender, DataReceivedEventArgs e)
 		{
+			_logger.Value.Debug($"OnCore_Data: '{e.Data}'");
+
 			if (e.Data == null) return;
 			string s = (e.Data ?? string.Empty).Trim();
 			if (s.e_IsNullOrEmpty()) return;
@@ -227,6 +251,8 @@ namespace SDeleteGUI.Core.SDelete
 		}
 		private void OnCore_Error(object sender, DataReceivedEventArgs e)
 		{
+			_logger.Value.Debug($"OnCore_Error: '{e.Data}'");
+
 			if (e.Data == null) return;
 			string s = (e.Data ?? string.Empty).Trim();
 			if (s.e_IsNullOrEmpty()) return;
@@ -239,6 +265,7 @@ namespace SDeleteGUI.Core.SDelete
 
 		private void CoreDisConnect()
 		{
+			_logger.Value.Debug("CoreDisConnect");
 			if (runningProcess == null) throw new ArgumentNullException(nameof(runningProcess));
 			try { runningProcess!.CancelOutputRead(); } catch { }
 			try { runningProcess!.CancelErrorRead(); } catch { }
@@ -255,15 +282,18 @@ namespace SDeleteGUI.Core.SDelete
 				{
 					///Debug.WriteLine($"*** ConsoleCore Waitning...");
 					runningProcess.WaitForExit(1000);
+					Thread.Sleep(1000);
 				}
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine($"*** Console ERROR! '{SDeleteBinary}' {ex.Message}.");
+				_logger.Value.Error($"CoreThreadProc", ex);
 			}
 			finally
 			{
 				Debug.WriteLine($"*** FinishedConsole '{SDeleteBinary}'.");
+				_logger.Value.Debug($"CoreThreadProc finally");
 
 				_evtCleanFinished.Set();
 				CoreDisConnect();
@@ -280,6 +310,7 @@ namespace SDeleteGUI.Core.SDelete
 
 		public void Stop()
 		{
+			_logger.Value.Debug($"CoreThreadProc Need Stop");
 			if (runningProcess == null) return; //; throw new Exception("Still not started!");
 
 			if (!runningProcess!.HasExited)
@@ -287,6 +318,7 @@ namespace SDeleteGUI.Core.SDelete
 				runningProcess.Kill();
 				_evtCleanFinished.WaitOne();
 			}
+			_logger.Value.Debug($"CoreThreadProc Stopped");
 		}
 	}
 }

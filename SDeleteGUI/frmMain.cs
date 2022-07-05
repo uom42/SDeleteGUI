@@ -1,5 +1,10 @@
 ﻿
+using System.Security.Cryptography;
+
 using Microsoft.WindowsAPICodePack.Taskbar;
+
+using NLog;
+using NLog.Fluent;
 
 using SDeleteGUI.Core.SDelete;
 
@@ -9,6 +14,9 @@ namespace SDeleteGUI
 {
 	internal partial class frmMain : Form
 	{
+
+		private Lazy<Logger> _logger = new(LogManager.GetCurrentClassLogger());
+
 		private enum SourceModes : int
 		{
 			Unknown = 0,
@@ -32,7 +40,11 @@ namespace SDeleteGUI
 			Text = $"{Application.ProductName} {Application.ProductVersion}";
 
 			this.Load += async (_, _) => await _Load();
-			this.FormClosing += (s, e) => { if (e.CloseReason == CloseReason.UserClosing) _sdmgr!.Stop(); };
+			this.FormClosing += (s, e) =>
+			{
+				_logger.Value.Debug($"FormClosing, CloseReason = {e.CloseReason}");
+				if (e.CloseReason == CloseReason.UserClosing) _sdmgr!.Stop();
+			};
 
 			optSource_PhyDisk.CheckedChanged += (_, _) => OnSourceChanged();
 			optSource_LogDisk.CheckedChanged += (_, _) => OnSourceChanged();
@@ -49,16 +61,19 @@ namespace SDeleteGUI
 		}
 
 
+
 		private async Task _Load()
 		{
+			_logger.Value.Debug("_Load");
 
 			Func<FileInfo> cbAskUserForBinary = new(() =>
 			{
-				//if (ofd.ShowDialog() != DialogResult.OK) throw new NotImplementedException();
-
 				string sMsg = @$"Sysinternals '{SDeleteManager.C_SDBIN_FILE64}' or '{SDeleteManager.C_SDBIN_FILE}' was not found in well-known locations!
 
 Do you want to specify it manualy ?";
+
+				_logger.Value.Debug(sMsg);
+
 				if (MessageBox.Show(
 					sMsg,
 					Application.ProductName,
@@ -66,6 +81,8 @@ Do you want to specify it manualy ?";
 					MessageBoxIcon.Question
 					) != DialogResult.Yes)
 					throw new NotImplementedException();
+
+				_logger.Value.Debug("Yes!");
 
 				using OpenFileDialog ofd = new()
 				{
@@ -77,9 +94,9 @@ Do you want to specify it manualy ?";
 					Filter = $"{SDeleteManager.C_SDBIN_FILE64}|{SDeleteManager.C_SDBIN_FILE64}"
 				};
 				if (ofd.ShowDialog() != DialogResult.OK) throw new NotImplementedException();
+				_logger.Value.Debug($"OpenFileDialog.FileName = '{ofd.FileName}'");
 				return new(ofd.FileName);
 			});
-
 			try
 			{
 				_sdmgr = new SDeleteManager(cbAskUserForBinary);
@@ -87,6 +104,8 @@ Do you want to specify it manualy ?";
 
 			catch (Exception ex)
 			{
+				_logger.Value.Error($"_Load", ex);
+
 				if (ex is not NotImplementedException)//Not user canceled error
 					ex.FIX_ERROR(true);
 
@@ -111,6 +130,7 @@ Do you want to specify it manualy ?";
 			}
 			catch (Exception ex)
 			{
+				_logger.Value.Error($"_Load2", ex);
 				lblSDeleteBinPath.Text = ex.Message;
 				return;
 			}
@@ -124,6 +144,8 @@ Do you want to specify it manualy ?";
 		/// <summary>Load Physical disk list from WMI</summary>
 		private async Task FillDisksList()
 		{
+			_logger.Value.Debug($"Loading disk list");
+
 			cboSource_PhyDisk.DisabeAndShowBanner("Loading disk list...");
 			optSource_PhyDisk.Enabled = false;
 
@@ -133,23 +155,28 @@ Do you want to specify it manualy ?";
 			try
 			{
 				string[] logDisks = Directory.GetLogicalDrives();
+				_logger.Value.Debug($"Directory.GetLogicalDrives = '{string.Join("\n", logDisks)}'");
+
 				optSource_LogDisk.Enabled = logDisks.Any();
 				cboSource_LogDisk.FillAndSelectLast(logDisks, _SourceMode == SourceModes.LogDisk);
 			}
 			catch (Exception ex)
 			{
+				_logger.Value.Error(ex);
 				cboSource_LogDisk.DisabeAndShowError(ex);
 			}
 
-
 			try
 			{
+				_logger.Value.Debug("WmiDisk.GetDisksAsync");
 				WmiDisk[] wd = await WmiDisk.GetDisksAsync();
+				_logger.Value.Debug(string.Join("\n", wd.Select(wd => wd.ToString()).ToArray()));
 				optSource_PhyDisk.Enabled = wd.Any();
 				cboSource_PhyDisk.FillAndSelectLast(wd, _SourceMode == SourceModes.PhyDisk);
 			}
 			catch (Exception ex)
 			{
+				_logger.Value.Error(ex);
 				cboSource_PhyDisk.DisabeAndShowError(ex);
 			}
 		}
@@ -165,6 +192,8 @@ Do you want to specify it manualy ?";
 				else if (optSource_Dir.Checked) _SourceMode = SourceModes.Dir;
 				else if (optSource_Files.Checked) _SourceMode = SourceModes.Files;
 				else throw _exSourceError;
+
+				_logger.Value.Debug($"OnSourceChanged, _SourceMode = {_SourceMode}");
 
 				cboSource_PhyDisk.Enabled = _SourceMode == SourceModes.PhyDisk;
 				cboSource_LogDisk.Enabled = _SourceMode == SourceModes.LogDisk;
@@ -186,12 +215,15 @@ Do you want to specify it manualy ?";
 
 		private async Task OnSource_RefreshLists()
 		{
+			_logger.Value.Debug("OnSource_RefreshLists");
+
 			try
 			{
 				await FillDisksList();
 			}
 			catch (Exception ex)
 			{
+				_logger.Value.Error("OnSource_RefreshLists", ex);
 				ex.FIX_ERROR(true);
 			}
 			finally
@@ -202,6 +234,8 @@ Do you want to specify it manualy ?";
 
 		private void OnSource_DisplaySelectionUI()
 		{
+			_logger.Value.Debug($"OnSource_DisplaySelectionUI, _SourceMode = {_SourceMode}");
+
 			try
 			{
 				switch (_SourceMode)
@@ -268,6 +302,8 @@ Do you want to specify it manualy ?";
 		/// <summary>Update button state by UI selections</summary>
 		private void UpdateUI()
 		{
+			_logger.Value.Debug($"UpdateUI, _SourceMode = {_SourceMode}");
+
 			bool bCanRun = false;
 			try
 			{
@@ -308,17 +344,16 @@ Do you want to specify it manualy ?";
 			}
 			catch (Exception ex)
 			{
-				//ex.FIX_ERROR(true);
+				_logger.Value.Error($"UpdateUI", ex);
 			}
-			finally
-			{
-				btnStartStop.Enabled = bCanRun;
-			}
+			finally { btnStartStop.Enabled = bCanRun; }
 		}
 
 
 		private void OnStartStop()
 		{
+			_logger.Value.Debug($"OnStartStop, _SourceMode = {_SourceMode}, _isRunning = {_isRunning}");
+
 			if (_isRunning)
 			{
 				_sdmgr!.Stop();
@@ -377,6 +412,8 @@ Do you want to specify it manualy ?";
 				}
 				catch (Exception ex)
 				{
+					_logger.Value.Error($"OnStartStop", ex);
+
 					ProgressBarSetState_Error();
 					ex.FIX_ERROR(true);
 					OnFinished();
@@ -386,6 +423,8 @@ Do you want to specify it manualy ?";
 
 		private void OnFinished()
 		{
+			_logger.Value.Debug("OnFinished");
+
 			SDeleteEngine_DetachEvents();
 
 			_isRunning = false;
