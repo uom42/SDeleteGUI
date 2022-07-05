@@ -1,15 +1,8 @@
 ﻿
-using System;
-using System.Management;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-
 using Microsoft.WindowsAPICodePack.Taskbar;
 
 using SDeleteGUI.Core.SDelete;
 
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 using static SDeleteGUI.Core.SDelete.SDeleteManager;
 
 namespace SDeleteGUI
@@ -30,7 +23,6 @@ namespace SDeleteGUI
 
 		private SDeleteManager? _sdmgr = null;
 		private bool _isRunning = false;
-		private Lazy<TaskbarManager> _tbm = new(TaskbarManager.Instance);
 
 
 		public frmMain()
@@ -406,117 +398,8 @@ Do you want to specify it manualy ?";
 
 
 
-		private void SDeleteEngine_AttachEvents()
-		{
-			_sdmgr!.OutputRAW += OnCore_Data_RAW;
-			_sdmgr!.OutputProgress += OnCore_Data_Progress;
-			_sdmgr!.Error += OnCore_Error;
-			_sdmgr!.Finished += (_, _) => this.e_runInUIThread(() => OnFinished());
-		}
-		private void SDeleteEngine_DetachEvents()
-		{
-			_sdmgr!.OutputRAW -= OnCore_Data_RAW;
-			_sdmgr!.OutputProgress -= OnCore_Data_Progress!;
-			_sdmgr!.Error -= OnCore_Error;
-			_sdmgr!.Finished -= (_, _) => this.e_runInUIThread(() => OnFinished());
-		}
-
-
-		private void OnCore_Data_RAW(object sender, DataReceivedEventArgs e)
-		{
-
-			if (e.Data == null) return;
-			string s = (e.Data ?? string.Empty).Trim();
-			if (s.e_IsNullOrEmpty()) return;
-
-			Debug.WriteLine($"Output Data: '{s}'");
-			LogAddRow(s);
-		}
-		private void LogAddRow(string s)
-		{
-			//lstLog.e_runInUIThread_AppendLine(s, 1000);
-			const int C_MAX_LOG_ROWS = 1000;
-
-			this.e_runInUIThread(() =>
-			{
-				lstLog.BeginUpdate();
-				try
-				{
-					while (lstLog.Items.Count >= C_MAX_LOG_ROWS)
-					{
-						lstLog.Items.RemoveAt(0);
-					}
-					lstLog.Items.Add(s);
-					lstLog.SelectedIndex = (lstLog.Items.Count - 1);
-				}
-				finally { lstLog.EndUpdate(); }
-			});
-		}
-
-		private void OnCore_Data_Progress(object sender, ProgressInfo e)
-			=> this.e_runInUIThread(() => OnCore_Data_Progress(e));
-
-		private void OnCore_Data_Progress(ProgressInfo e)
-		{
-			//Debug.WriteLine("Progress data detected! " + e.ToString());
-			ProgressBarSetState_Progress(e.ProgressPercent);
-		}
-
-
-		private void OnCore_Error(object sender, DataReceivedEventArgs e)
-		{
-			if (e.Data == null) return;
-			string s = e.Data ?? string.Empty;
-			if (s.e_IsNullOrEmpty()) return;
-
-			Debug.WriteLine($"Error Data: '{s}'");
-			//lstLog.e_runInUIThread_AppendLine("ERROR!: " + (s), 1000);
-			LogAddRow("ERROR!: " + (s));
-		}
 
 
 
-
-
-		private void ProgressBarSetState_Marquee()
-		{
-			pbProgress.e_SetValues();
-			pbProgress.e_SetState(Extensions_Controls_ProgressBar.PBM_STATES.PBST_NORMAL);
-			pbProgress.Style = ProgressBarStyle.Marquee;
-
-			_tbm.Value.SetProgressState(TaskbarProgressBarState.Indeterminate);
-		}
-		private void ProgressBarSetState_Progress(float progress)
-		{
-			int iProgress = (int)progress;
-
-			pbProgress.e_SetState(Extensions_Controls_ProgressBar.PBM_STATES.PBST_NORMAL);
-			pbProgress.e_SetValues(0, 100, iProgress);
-			pbProgress.Style = ProgressBarStyle.Continuous;
-
-			_tbm.Value.SetProgressState(TaskbarProgressBarState.Normal);
-			_tbm.Value.SetProgressValue(iProgress, 100);
-		}
-		private void ProgressBarSetState_Error()
-		{
-			pbProgress.Style = ProgressBarStyle.Blocks;
-			pbProgress.e_SetValues(0, 100, 100);
-			pbProgress.e_SetState(Extensions_Controls_ProgressBar.PBM_STATES.PBST_ERROR);
-			_tbm.Value.SetProgressState(TaskbarProgressBarState.Error);
-		}
-		private void ProgressBarSetState_Finished()
-		{
-			pbProgress.Style = ProgressBarStyle.Blocks;
-			pbProgress.e_SetValues(0, 100, 100);
-			pbProgress.e_SetState(Extensions_Controls_ProgressBar.PBM_STATES.PBST_NORMAL);
-
-			_tbm.Value.SetProgressState(TaskbarProgressBarState.Normal);
-			_tbm.Value.SetProgressValue(100, 100);
-		}
-
-		private void btnSource_Refresh_Click(object sender, EventArgs e)
-		{
-
-		}
 	}
 }

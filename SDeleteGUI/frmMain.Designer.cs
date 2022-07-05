@@ -1,4 +1,6 @@
-﻿namespace SDeleteGUI
+﻿using SDeleteGUI.Core;
+
+namespace SDeleteGUI
 {
 	partial class frmMain
 	{
@@ -52,7 +54,7 @@
 			this.optSource_LogDisk = new System.Windows.Forms.RadioButton();
 			this.cboSource_LogDisk = new System.Windows.Forms.ComboBox();
 			this.btnSource_Refresh = new System.Windows.Forms.Button();
-			this.lstLog = new System.Windows.Forms.ListBox();
+			this.lstLog = new ListBoxEx();
 			this.pbProgress = new System.Windows.Forms.ProgressBar();
 			this.btnStartStop = new System.Windows.Forms.Button();
 			this.tlpDown = new System.Windows.Forms.TableLayoutPanel();
@@ -234,23 +236,23 @@
 			this.numPasses.Dock = System.Windows.Forms.DockStyle.Right;
 			this.numPasses.Location = new System.Drawing.Point(171, 192);
 			this.numPasses.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
+			10,
+			0,
+			0,
+			0});
 			this.numPasses.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+			1,
+			0,
+			0,
+			0});
 			this.numPasses.Name = "numPasses";
 			this.numPasses.Size = new System.Drawing.Size(72, 23);
 			this.numPasses.TabIndex = 11;
 			this.numPasses.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+			1,
+			0,
+			0,
+			0});
 			// 
 			// tlpCleanModes
 			// 
@@ -368,7 +370,6 @@
 			this.btnSource_Refresh.TabIndex = 5;
 			this.btnSource_Refresh.Text = "🗘";
 			this.btnSource_Refresh.UseVisualStyleBackColor = true;
-			this.btnSource_Refresh.Click += new System.EventHandler(this.btnSource_Refresh_Click);
 			// 
 			// lstLog
 			// 
@@ -461,7 +462,7 @@
 		private RadioButton optSource_PhyDisk;
 		private ComboBox cboSource_PhyDisk;
 		private Button btnStartStop;
-		private ListBox lstLog;
+		private ListBoxEx lstLog;
 		private ProgressBar pbProgress;
 		private TableLayoutPanel tlpDown;
 		private RadioButton optSource_LogDisk;

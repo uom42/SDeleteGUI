@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -4432,6 +4433,14 @@ namespace uom
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			internal static string e_CreateWinSharePrefix(this string host) => $@"\\{host}\";
 
+
+			/// <summary>RegEx Words Count In String </summary>
+			private static readonly Lazy<Regex> _rexWordsInString = new Lazy<Regex>(new Regex(@"\w+"));
+
+			/// <summary>Create string like '\\x.x.x.x\' or \\server\</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static int e_GetWordsCount(this string s)
+				=> _rexWordsInString.Value.Matches(s).Count;
 
 		}
 
