@@ -60,19 +60,17 @@ namespace SDeleteGUI
 					{
 						//Будем искать частичное совпадение с предыдущей строкой, если оно будет - то сделаем в предыдущей строке замену текста
 						const int MIN_EQUAL_CHARS = 3;
-						const int MIN_EQUAL_WORDS = 1;
+						const int MIN_EQUAL_WORDS = 2;
 
 						string lastRow = (string)lstLog.Items[^1];
 						if (!string.IsNullOrWhiteSpace(lastRow))
 						{
-							int minLen = Math.Min(lastRow.Length, s.Length);
-							int equalChars = 0;
-							while ((equalChars < minLen) && (lastRow[equalChars] == s[equalChars])) { equalChars++; }
-							string equalPart = s.Substring(equalChars);
-							equalPart = equalPart.Replace("  ", " ");//Replace all double spaces to single spaces
-							int wordsCount = equalPart.e_GetWordsCount();
+							var eq = s.e_GetStringsEquality(lastRow);
 
-							if ((equalChars == minLen) || (equalChars >= MIN_EQUAL_CHARS && wordsCount >= MIN_EQUAL_WORDS))
+							if ((eq.CommonPrefixString == s)
+							|| (
+							(eq.CommonPrefixLen >= MIN_EQUAL_CHARS) && (eq.UniqueWordsInBothStrings.Length >= MIN_EQUAL_WORDS)
+							))
 							{
 								//Looks like the some string as previous with some changes... Just update last row
 								lstLog.Items[^1] = s;

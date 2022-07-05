@@ -4437,10 +4437,61 @@ namespace uom
 			/// <summary>RegEx Words Count In String </summary>
 			private static readonly Lazy<Regex> _rexWordsInString = new Lazy<Regex>(new Regex(@"\w+"));
 
-			/// <summary>Create string like '\\x.x.x.x\' or \\server\</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static Match[] e_GetWordsMatches(this string s)
+				=> _rexWordsInString
+				.Value
+				.Matches(s)
+				.Cast<Match>()
+				.ToArray();
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static string[] e_GetWordsStrings(this string s)
+				=> s
+				.e_GetWordsMatches()
+				.Select(m => m.Value)
+				.ToArray();
+
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			internal static int e_GetWordsCount(this string s)
 				=> _rexWordsInString.Value.Matches(s).Count;
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static (
+				int MinLen,
+				string CommonPrefixString,
+				int CommonPrefixLen,
+				int CommonPrefixWordsCount,
+				string[] TotalWordsInS1,
+				string[] TotalWordsInS2,
+				string[] UniqueWordsInBothStrings
+
+				)
+				e_GetStringsEquality(this string s1, string s2)
+			{
+				int minLen = Math.Min(s1.Length, s2.Length);
+				int equalChars = 0;
+				while ((equalChars < minLen) && (s1[equalChars] == s2[equalChars])) { equalChars++; }
+				string equalPrefix = s1.Substring(0, equalChars);
+				int wordsCountInPrefix = equalPrefix.e_GetWordsCount();
+
+
+				//Count total words count in s1
+				string[] totalWordsInS1 = s1.e_GetWordsStrings().Distinct().ToArray();
+				string[] totalWordsInS2 = s2.e_GetWordsStrings().Distinct().ToArray();
+				string[] uniqueWordsInBothStrings = totalWordsInS1.Where(w => s2.IndexOf(w) >= 0).ToArray();
+
+
+				return (
+					minLen,
+					equalPrefix,
+					equalChars,
+					wordsCountInPrefix,
+					totalWordsInS1,
+					totalWordsInS2,
+					uniqueWordsInBothStrings
+					);
+			}
 
 		}
 

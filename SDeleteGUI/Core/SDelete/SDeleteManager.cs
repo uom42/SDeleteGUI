@@ -234,11 +234,10 @@ namespace SDeleteGUI.Core.SDelete
 
 		private void OnCore_Data(object sender, DataReceivedEventArgs e)
 		{
-			_logger.Value.Debug($"OnCore_Data: '{e.Data}'");
-
 			if (e.Data == null) return;
 			string s = (e.Data ?? string.Empty).Trim();
 			if (s.e_IsNullOrEmpty()) return;
+			_logger.Value.Debug($"OnCore_Data: '{e.Data}'");
 
 			if (null == OutputRAW) Debug.WriteLine($"WARNING! Unprocessed Output Data: '{s}'");
 			OutputRAW!.Invoke(sender, e);
@@ -252,7 +251,6 @@ namespace SDeleteGUI.Core.SDelete
 		private void OnCore_Error(object sender, DataReceivedEventArgs e)
 		{
 			_logger.Value.Debug($"OnCore_Error: '{e.Data}'");
-
 			if (e.Data == null) return;
 			string s = (e.Data ?? string.Empty).Trim();
 			if (s.e_IsNullOrEmpty()) return;

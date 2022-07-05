@@ -23,10 +23,29 @@ namespace SDeleteGUI
 		[STAThread]
 		static void Main()
 		{
+			//TEST(); return;
+
 			Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new frmMain());
+		}
+
+
+
+		private static void TEST()
+		{
+			string s = @"Cleaning Cleaning MFT...-
+Cleaning MFT...\
+Cleaning MFT...|";
+			var a = s.e_SplitToLines().ToArray();
+
+			string old = "";
+			foreach (var s2 in a)
+			{
+				var eq = s2.e_GetStringsEquality(old);
+				old = s2;
+			}
 		}
 	}
 }
