@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -17,9 +12,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
-
-using uom.Extensions;
 
 #nullable enable
 
@@ -4438,19 +4430,12 @@ namespace uom
 			private static readonly Lazy<Regex> _rexWordsInString = new Lazy<Regex>(new Regex(@"\w+"));
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static Match[] e_GetWordsMatches(this string s)
-				=> _rexWordsInString
-				.Value
-				.Matches(s)
-				.Cast<Match>()
-				.ToArray();
+			internal static IEnumerable<Match> e_GetWords(this string s)
+				=> _rexWordsInString.Value.Matches(s).Cast<Match>();
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			internal static string[] e_GetWordsStrings(this string s)
-				=> s
-				.e_GetWordsMatches()
-				.Select(m => m.Value)
-				.ToArray();
+				=> s.e_GetWords().Select(m => m.Value).ToArray();
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			internal static int e_GetWordsCount(this string s)
@@ -4459,33 +4444,30 @@ namespace uom
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			internal static (
 				int MinLen,
-				string CommonPrefixString,
-				int CommonPrefixLen,
+				string CommonPrefix,
 				int CommonPrefixWordsCount,
 				string[] TotalWordsInS1,
 				string[] TotalWordsInS2,
 				string[] UniqueWordsInBothStrings
-
 				)
-				e_GetStringsEquality(this string s1, string s2)
+				e_GetEqualityMetrics(this string s1, string s2)
 			{
 				int minLen = Math.Min(s1.Length, s2.Length);
 				int equalChars = 0;
 				while ((equalChars < minLen) && (s1[equalChars] == s2[equalChars])) { equalChars++; }
 				string equalPrefix = s1.Substring(0, equalChars);
 				int wordsCountInPrefix = equalPrefix.e_GetWordsCount();
-
-
-				//Count total words count in s1
-				string[] totalWordsInS1 = s1.e_GetWordsStrings().Distinct().ToArray();
-				string[] totalWordsInS2 = s2.e_GetWordsStrings().Distinct().ToArray();
-				string[] uniqueWordsInBothStrings = totalWordsInS1.Where(w => s2.IndexOf(w) >= 0).ToArray();
+				string[] totalWordsInS1 = s1.e_GetWordsStrings();
+				string[] totalWordsInS2 = s2.e_GetWordsStrings();
+				string[] uniqueWordsInBothStrings = totalWordsInS1
+					.Distinct()
+					.Where(w => s2.IndexOf(w) >= 0)
+					.ToArray();
 
 
 				return (
 					minLen,
 					equalPrefix,
-					equalChars,
 					wordsCountInPrefix,
 					totalWordsInS1,
 					totalWordsInS2,

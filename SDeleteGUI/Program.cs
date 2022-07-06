@@ -43,7 +43,7 @@ Cleaning MFT...|";
 			string old = "";
 			foreach (var s2 in a)
 			{
-				var eq = s2.e_GetStringsEquality(old);
+				var eq = s2.e_GetEqualityMetrics(old);
 				old = s2;
 			}
 		}

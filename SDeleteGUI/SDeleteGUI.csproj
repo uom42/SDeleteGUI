@@ -8,9 +8,9 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ApplicationIcon>trash (4).ico</ApplicationIcon>
 
-		<Version>1.1.0.0</Version>
-		<AssemblyVersion>1.1.0.0</AssemblyVersion>
-		<FileVersion>1.1.0.1</FileVersion>
+		<Version>1.2.0.0</Version>
+		<AssemblyVersion>1.2.0.0</AssemblyVersion>
+		<FileVersion>1.2.0.1</FileVersion>
 
 		<AssemblyTitle>SDelete GUI</AssemblyTitle>
 		<Copyright>(C)2022 UOM</Copyright>
@@ -33,9 +33,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="NLog.config">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
+		<None Update="NLog.config">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

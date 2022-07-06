@@ -30,6 +30,7 @@ namespace SDeleteGUI
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
 			this.tlpParams = new System.Windows.Forms.TableLayoutPanel();
 			this.label1 = new System.Windows.Forms.Label();
@@ -54,10 +55,12 @@ namespace SDeleteGUI
 			this.optSource_LogDisk = new System.Windows.Forms.RadioButton();
 			this.cboSource_LogDisk = new System.Windows.Forms.ComboBox();
 			this.btnSource_Refresh = new System.Windows.Forms.Button();
-			this.lstLog = new ListBoxEx();
+			this.lstLog = new SDeleteGUI.Core.ListBoxEx();
 			this.pbProgress = new System.Windows.Forms.ProgressBar();
 			this.btnStartStop = new System.Windows.Forms.Button();
 			this.tlpDown = new System.Windows.Forms.TableLayoutPanel();
+			this.lblStatus = new System.Windows.Forms.Label();
+			this.tmrElapsed = new System.Windows.Forms.Timer(this.components);
 			this.tlpParams.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numPasses)).BeginInit();
 			this.tlpCleanModes.SuspendLayout();
@@ -236,23 +239,23 @@ namespace SDeleteGUI
 			this.numPasses.Dock = System.Windows.Forms.DockStyle.Right;
 			this.numPasses.Location = new System.Drawing.Point(171, 192);
 			this.numPasses.Maximum = new decimal(new int[] {
-			10,
-			0,
-			0,
-			0});
+            10,
+            0,
+            0,
+            0});
 			this.numPasses.Minimum = new decimal(new int[] {
-			1,
-			0,
-			0,
-			0});
+            1,
+            0,
+            0,
+            0});
 			this.numPasses.Name = "numPasses";
 			this.numPasses.Size = new System.Drawing.Size(72, 23);
 			this.numPasses.TabIndex = 11;
 			this.numPasses.Value = new decimal(new int[] {
-			1,
-			0,
-			0,
-			0});
+            1,
+            0,
+            0,
+            0});
 			// 
 			// tlpCleanModes
 			// 
@@ -363,6 +366,7 @@ namespace SDeleteGUI
 			// btnSource_Refresh
 			// 
 			this.btnSource_Refresh.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.btnSource_Refresh.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
 			this.btnSource_Refresh.Location = new System.Drawing.Point(769, 66);
 			this.btnSource_Refresh.Name = "btnSource_Refresh";
 			this.tlpParams.SetRowSpan(this.btnSource_Refresh, 2);
@@ -373,38 +377,42 @@ namespace SDeleteGUI
 			// 
 			// lstLog
 			// 
+			this.tlpDown.SetColumnSpan(this.lstLog, 2);
 			this.lstLog.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.lstLog.ItemHeight = 15;
 			this.lstLog.Location = new System.Drawing.Point(3, 3);
 			this.lstLog.Name = "lstLog";
-			this.lstLog.Size = new System.Drawing.Size(790, 190);
+			this.lstLog.Size = new System.Drawing.Size(790, 198);
 			this.lstLog.TabIndex = 0;
 			// 
 			// pbProgress
 			// 
+			this.tlpDown.SetColumnSpan(this.pbProgress, 2);
 			this.pbProgress.Dock = System.Windows.Forms.DockStyle.Top;
-			this.pbProgress.Location = new System.Drawing.Point(3, 207);
+			this.pbProgress.Location = new System.Drawing.Point(3, 215);
 			this.pbProgress.Name = "pbProgress";
 			this.pbProgress.Size = new System.Drawing.Size(790, 8);
 			this.pbProgress.TabIndex = 25;
 			// 
 			// btnStartStop
 			// 
-			this.btnStartStop.Dock = System.Windows.Forms.DockStyle.Right;
-			this.btnStartStop.Location = new System.Drawing.Point(666, 223);
+			this.btnStartStop.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.btnStartStop.Location = new System.Drawing.Point(671, 231);
 			this.btnStartStop.Name = "btnStartStop";
-			this.btnStartStop.Size = new System.Drawing.Size(127, 42);
+			this.btnStartStop.Size = new System.Drawing.Size(122, 34);
 			this.btnStartStop.TabIndex = 1;
 			this.btnStartStop.Text = "Start";
 			this.btnStartStop.UseVisualStyleBackColor = true;
 			// 
 			// tlpDown
 			// 
-			this.tlpDown.ColumnCount = 1;
+			this.tlpDown.ColumnCount = 2;
 			this.tlpDown.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tlpDown.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 128F));
 			this.tlpDown.Controls.Add(this.pbProgress, 0, 2);
-			this.tlpDown.Controls.Add(this.btnStartStop, 0, 3);
+			this.tlpDown.Controls.Add(this.btnStartStop, 1, 3);
 			this.tlpDown.Controls.Add(this.lstLog, 0, 0);
+			this.tlpDown.Controls.Add(this.lblStatus, 0, 3);
 			this.tlpDown.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tlpDown.Location = new System.Drawing.Point(16, 315);
 			this.tlpDown.Name = "tlpDown";
@@ -412,9 +420,23 @@ namespace SDeleteGUI
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 8F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
-			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
 			this.tlpDown.Size = new System.Drawing.Size(796, 268);
 			this.tlpDown.TabIndex = 1;
+			// 
+			// lblStatus
+			// 
+			this.lblStatus.AutoSize = true;
+			this.lblStatus.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.lblStatus.Location = new System.Drawing.Point(3, 228);
+			this.lblStatus.Name = "lblStatus";
+			this.lblStatus.Size = new System.Drawing.Size(662, 40);
+			this.lblStatus.TabIndex = 26;
+			this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			// 
+			// tmrElapsed
+			// 
+			this.tmrElapsed.Interval = 1000;
 			// 
 			// frmMain
 			// 
@@ -435,6 +457,7 @@ namespace SDeleteGUI
 			this.tlpCleanModes.ResumeLayout(false);
 			this.tlpCleanModes.PerformLayout();
 			this.tlpDown.ResumeLayout(false);
+			this.tlpDown.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -469,5 +492,7 @@ namespace SDeleteGUI
 		private ComboBox cboSource_LogDisk;
 		private Button btnSource_Refresh;
 		private Panel panel3;
+		private Label lblStatus;
+		private Timer tmrElapsed;
 	}
 }

@@ -51,10 +51,8 @@ namespace SDeleteGUI
 				lstLog.BeginUpdate();
 				try
 				{
-					while (lstLog.Items.Count >= C_MAX_LOG_ROWS)
-					{
-						lstLog.Items.RemoveAt(0);
-					}
+					//Limit count of lines to limit
+					while (lstLog.Items.Count >= C_MAX_LOG_ROWS) lstLog.Items.RemoveAt(0);
 
 					if (lstLog.Items.Count > 0)
 					{
@@ -65,34 +63,22 @@ namespace SDeleteGUI
 						string lastRow = (string)lstLog.Items[^1];
 						if (!string.IsNullOrWhiteSpace(lastRow))
 						{
-							var eq = s.e_GetStringsEquality(lastRow);
+							var eq = s
+							.e_GetEqualityMetrics(lastRow);
 
-							if ((eq.CommonPrefixString == s)
+							if ((eq.CommonPrefix == s)
 							|| (
-							(eq.CommonPrefixLen >= MIN_EQUAL_CHARS) && (eq.UniqueWordsInBothStrings.Length >= MIN_EQUAL_WORDS)
+							(eq.CommonPrefix.Length >= MIN_EQUAL_CHARS) && (eq.UniqueWordsInBothStrings.Length >= MIN_EQUAL_WORDS)
 							))
 							{
 								//Looks like the some string as previous with some changes... Just update last row
 								lstLog.Items[^1] = s;
-							}
-							else
-							{
-								//Looks like diferend string
-								lstLog.Items.Add(s);
-								lstLog.SelectedIndex = (lstLog.Items.Count - 1);
+								return;
 							}
 						}
-						else
-						{
-							lstLog.Items.Add(s);
-							lstLog.SelectedIndex = (lstLog.Items.Count - 1);
-						}
 					}
-					else
-					{
-						lstLog.Items.Add(s);
-						//lstLog.SelectedIndex = (lstLog.Items.Count - 1);
-					}
+					lstLog.Items.Add(s);
+					if (lstLog.Items.Count > 1) lstLog.SelectedIndex = (lstLog.Items.Count - 1);
 				}
 				finally { lstLog.EndUpdate(); }
 			});

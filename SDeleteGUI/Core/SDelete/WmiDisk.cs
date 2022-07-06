@@ -14,8 +14,6 @@ namespace SDeleteGUI.Core.SDelete
 		public readonly ulong Size;
 		public readonly uint? Partitions;
 
-
-
 		public readonly string FirmwareRevision;
 		public readonly string SerialNumber;
 
@@ -65,7 +63,7 @@ namespace SDeleteGUI.Core.SDelete
 
 		public override string ToString()
 		{
-			var _displayName = $"{Index} {Model}, {InterfaceType} ({Size!.e_FormatByteSize_Win32()}), Partitions: {Partitions}";
+			var _displayName = $@"{Index}: {Model}, {InterfaceType} ({Size!.e_FormatByteSize_Win32()}), {Partitions} partition(s)";
 			return _displayName.Replace("  ", " ").Trim();
 		}
 

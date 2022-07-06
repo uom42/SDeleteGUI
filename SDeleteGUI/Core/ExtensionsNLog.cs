@@ -7,10 +7,18 @@ using uom.Extensions;
 
 #nullable enable
 
-namespace common
+namespace SDeleteGUI.Core
 {
 	internal static class ExtensionsNLog
 	{
+
+		[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void DebugArray<T>(this Logger log, IEnumerable<T> arr, string arrayDisplayName = "", string elementsSeparator = "\n")
+		{
+			string arrayString = string.Join(elementsSeparator, arr.Select(o => o!.ToString()).ToArray());
+			log.Debug(($"{arrayDisplayName}:\n{arrayString}").Trim());
+		}
+
 
 		[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Handle(
@@ -64,7 +72,7 @@ namespace common
 			bool showError = true,
 			bool CloseFormOnError = true,
 			bool useWaitCursor = true)
-				=> e_RunDelay(f, task.e_ToArrayOf(), delay, showError, CloseFormOnError, useWaitCursor);
+				=> f.e_RunDelay(task.e_ToArrayOf(), delay, showError, CloseFormOnError, useWaitCursor);
 
 
 	}

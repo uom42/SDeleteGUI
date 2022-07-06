@@ -1,11 +1,13 @@
 ﻿
 using System.Security.Cryptography;
 
+using Microsoft.VisualBasic.Logging;
 using Microsoft.WindowsAPICodePack.Taskbar;
 
 using NLog;
 using NLog.Fluent;
 
+using SDeleteGUI.Core;
 using SDeleteGUI.Core.SDelete;
 
 using static SDeleteGUI.Core.SDelete.SDeleteManager;
@@ -15,7 +17,10 @@ namespace SDeleteGUI
 	internal partial class frmMain : Form
 	{
 
-		private Lazy<Logger> _logger = new(LogManager.GetCurrentClassLogger());
+		private const string C_LOADING_DISKS_LIST = "Loading disk list...";
+		private const string C_ASK_USER = @$"Sysinternals '{SDeleteManager.C_SDBIN_FILE64}' or '{SDeleteManager.C_SDBIN_FILE}' was not found in well-known locations!
+
+Do you want to specify it manualy ?";
 
 		private enum SourceModes : int
 		{
@@ -32,6 +37,7 @@ namespace SDeleteGUI
 		private SDeleteManager? _sdmgr = null;
 		private bool _isRunning = false;
 
+		private Lazy<Logger> _logger = new(LogManager.GetCurrentClassLogger());
 
 		public frmMain()
 		{
@@ -54,12 +60,15 @@ namespace SDeleteGUI
 			btnSource_Refresh.Click += async (_, _) => await OnSource_RefreshLists();
 			btnSource_DisplaySelectionUI.Click += (_, _) => OnSource_DisplaySelectionUI();
 
+
+			cboSource_PhyDisk.SelectedIndexChanged += (_, _) => UpdateUI();
 			txtSource_Dir.TextChanged += (_, _) => UpdateUI();
 			txtSource_Files.TextChanged += (_, _) => UpdateUI();
 
 			btnStartStop.Click += (_, _) => OnStartStop();
-		}
 
+			tmrElapsed.Tick += (_, _) => OnElapsedTimerTick();
+		}
 
 
 		private async Task _Load()
@@ -68,14 +77,10 @@ namespace SDeleteGUI
 
 			Func<FileInfo> cbAskUserForBinary = new(() =>
 			{
-				string sMsg = @$"Sysinternals '{SDeleteManager.C_SDBIN_FILE64}' or '{SDeleteManager.C_SDBIN_FILE}' was not found in well-known locations!
-
-Do you want to specify it manualy ?";
-
-				_logger.Value.Debug(sMsg);
+				_logger.Value.Debug(C_ASK_USER);
 
 				if (MessageBox.Show(
-					sMsg,
+					C_ASK_USER,
 					Application.ProductName,
 					MessageBoxButtons.YesNo,
 					MessageBoxIcon.Question
@@ -144,40 +149,91 @@ Do you want to specify it manualy ?";
 		/// <summary>Load Physical disk list from WMI</summary>
 		private async Task FillDisksList()
 		{
-			_logger.Value.Debug($"Loading disk list");
+			_logger.Value.Debug($"FillDisksList");
 
-			cboSource_PhyDisk.DisabeAndShowBanner("Loading disk list...");
-			optSource_PhyDisk.Enabled = false;
+			await Task.WhenAll(
+				FillDisks_Log(optSource_LogDisk, cboSource_LogDisk, _SourceMode, _logger.Value)
+				,
+				FillDisks_Phy(optSource_PhyDisk, cboSource_PhyDisk, _SourceMode, _logger.Value)
+				);
+		}
+		/// <summary>Load Physical disk list from WMI</summary>
+		private static async Task FillDisks_Log(
+			RadioButton opt,
+			ComboBox cbo,
+			SourceModes cm,
+			Logger log)
+		{
+			log.Debug("FillDisks_Log");
 
-			cboSource_LogDisk.DisabeAndShowBanner("Loading disk list...");
-			optSource_LogDisk.Enabled = false;
+			LogDisk? old = null;
+			cbo.e_runInUIThread(() =>
+			{
+				opt.Enabled = false;
+
+				old = ((cbo.SelectedItem != null) && (cbo.SelectedItem is LogDisk selectedDisk)) ? selectedDisk : null;
+				cbo.DisabeAndShowBanner(C_LOADING_DISKS_LIST);
+				cbo.Enabled = false;
+			});
 
 			try
 			{
-				string[] logDisks = Directory.GetLogicalDrives();
-				_logger.Value.Debug($"Directory.GetLogicalDrives = '{string.Join("\n", logDisks)}'");
+				LogDisk[] disks = await LogDisk.GetDisksAsync(); log.DebugArray(disks, "LogDisk.GetDisksAsync");
+				LogDisk? newSelection = (old == null)
+					? disks.LastOrDefault()
+					: (disks.Where(d => d.DiskLetter == old.DiskLetter).FirstOrDefault()) ?? disks.LastOrDefault();
 
-				optSource_LogDisk.Enabled = logDisks.Any();
-				cboSource_LogDisk.FillAndSelectLast(logDisks, _SourceMode == SourceModes.LogDisk);
+				cbo.e_runInUIThread(() =>
+				{
+					opt.Enabled = disks.Any();
+					cbo.FillAndSelectLast(disks, cm == SourceModes.LogDisk, false);
+					if (newSelection != null) cbo.SelectedItem = newSelection!;
+				});
 			}
 			catch (Exception ex)
 			{
-				_logger.Value.Error(ex);
-				cboSource_LogDisk.DisabeAndShowError(ex);
+				log.Error(ex);
+				cbo.e_runInUIThread(() => cbo.DisabeAndShowError(ex));
 			}
+		}
+		/// <summary>Load Physical disk list from WMI</summary>
+		private static async Task FillDisks_Phy(
+			RadioButton opt,
+			ComboBox cbo,
+			SourceModes cm,
+			Logger log)
+		{
+			log.Debug("FillDisks_Phy");
+
+			WmiDisk? old = null;
+			cbo.e_runInUIThread(() =>
+			{
+				opt.Enabled = false;
+
+				old = ((cbo.SelectedItem != null) && (cbo.SelectedItem is WmiDisk selectedDisk)) ? selectedDisk : null;
+				cbo.DisabeAndShowBanner(C_LOADING_DISKS_LIST);
+				cbo.Enabled = false;
+			});
 
 			try
 			{
-				_logger.Value.Debug("WmiDisk.GetDisksAsync");
-				WmiDisk[] wd = await WmiDisk.GetDisksAsync();
-				_logger.Value.Debug(string.Join("\n", wd.Select(wd => wd.ToString()).ToArray()));
-				optSource_PhyDisk.Enabled = wd.Any();
-				cboSource_PhyDisk.FillAndSelectLast(wd, _SourceMode == SourceModes.PhyDisk);
+				WmiDisk[] disks = await WmiDisk.GetDisksAsync(); log.DebugArray(disks, "WmiDisk.GetDisksAsync");
+				WmiDisk? newSelection = (old == null)
+					? disks.LastOrDefault()
+					: (disks.Where(d => d.Index == old.Index).FirstOrDefault()) ?? disks.LastOrDefault();
+
+				cbo.e_runInUIThread(() =>
+				{
+					opt.Enabled = disks.Any();
+					cbo.FillAndSelectLast(disks, cm == SourceModes.PhyDisk, false);
+					if (newSelection != null) cbo.SelectedItem = newSelection!;
+				});
+
 			}
 			catch (Exception ex)
 			{
-				_logger.Value.Error(ex);
-				cboSource_PhyDisk.DisabeAndShowError(ex);
+				log.Error(ex);
+				cbo.e_runInUIThread(() => cbo.DisabeAndShowError(ex));
 			}
 		}
 
@@ -217,19 +273,13 @@ Do you want to specify it manualy ?";
 		{
 			_logger.Value.Debug("OnSource_RefreshLists");
 
-			try
-			{
-				await FillDisksList();
-			}
+			try { await FillDisksList(); }
 			catch (Exception ex)
 			{
 				_logger.Value.Error("OnSource_RefreshLists", ex);
 				ex.FIX_ERROR(true);
 			}
-			finally
-			{
-				UpdateUI();
-			}
+			finally { UpdateUI(); }
 		}
 
 		private void OnSource_DisplaySelectionUI()
@@ -310,7 +360,7 @@ Do you want to specify it manualy ?";
 				switch (_SourceMode)
 				{
 					case SourceModes.PhyDisk:
-						bCanRun = cboSource_PhyDisk.Items.Count > 0;
+						bCanRun = (cboSource_PhyDisk.Items.Count > 0) && (((WmiDisk)cboSource_PhyDisk.SelectedItem).Partitions < 1);
 						break;
 
 					case SourceModes.LogDisk:
@@ -328,7 +378,6 @@ Do you want to specify it manualy ?";
 							if (null != txtSource_Files.Tag)
 							{
 								FileInfo[] files = (FileInfo[])txtSource_Files.Tag;
-								//bCanRun = files.Any();
 								if (files.Any())
 								{
 									var existFiles = files.Where(fi => { fi.Refresh(); return fi.Exists; }).ToArray();
@@ -349,6 +398,7 @@ Do you want to specify it manualy ?";
 			finally { btnStartStop.Enabled = bCanRun; }
 		}
 
+		private DateTime _dtStarted = DateTime.Now;
 
 		private void OnStartStop()
 		{
@@ -356,10 +406,17 @@ Do you want to specify it manualy ?";
 
 			if (_isRunning)
 			{
+				tmrElapsed.Stop();
+				//tmrElapsed.Enabled = false;
+
 				_sdmgr!.Stop();
 			}
 			else
 			{
+				_dtStarted = DateTime.Now;
+				OnElapsedTimerTick();
+				tmrElapsed.Start();
+
 				_isRunning = true;
 				tlpParams.Enabled = false;
 				lstLog.Items.Clear();
@@ -388,8 +445,7 @@ Do you want to specify it manualy ?";
 						case SourceModes.LogDisk:
 							{
 								if (cboSource_LogDisk.Items.Count < 1) throw _exSourceError;
-								string sLogDisk = (string)cboSource_LogDisk.SelectedItem;
-								_sdmgr!.Run(passes, sLogDisk[0], cm);
+								_sdmgr!.Run(passes, (LogDisk)cboSource_LogDisk.SelectedItem, cm);
 							}
 							break;
 
@@ -423,6 +479,8 @@ Do you want to specify it manualy ?";
 
 		private void OnFinished()
 		{
+			tmrElapsed.Stop();
+
 			_logger.Value.Debug("OnFinished");
 
 			SDeleteEngine_DetachEvents();
@@ -434,11 +492,10 @@ Do you want to specify it manualy ?";
 			UpdateUI();
 		}
 
-
-
-
-
-
-
+		private void OnElapsedTimerTick()
+		{
+			TimeSpan tsElapsed = DateTime.Now - _dtStarted;
+			lblStatus.Text = $"{tsElapsed.e_ToShellTimeString(8)} since the beginning";
+		}
 	}
 }

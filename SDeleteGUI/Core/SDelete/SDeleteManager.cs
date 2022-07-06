@@ -115,7 +115,7 @@ namespace SDeleteGUI.Core.SDelete
 		/// </summary>
 		public void Run(uint passes, WmiDisk disk, CleanModes cm)
 		{
-			_logger.Value.Debug($"Run_Clean: Physical disk, Passes '{passes}', disk = '{disk}', CleanModes = '{cm}'");
+			_logger.Value.Debug($"Run_Clean: Passes '{passes}', WmiDisk = '{disk}', CleanModes = '{cm}'");
 			if (disk.Partitions > 0) throw new Exception($"Make sure that the disk '{disk}' has no file system volumes!");
 			string args = $"{cm.ToArgs()} {disk.Index}";
 			StartSDeleteCore(passes, args);
@@ -123,10 +123,10 @@ namespace SDeleteGUI.Core.SDelete
 
 
 		/// <summary>Zeroing free space on Disk</summary>
-		public void Run(uint passes, char disk, CleanModes cm)
+		public void Run(uint passes, LogDisk disk, CleanModes cm)
 		{
-			_logger.Value.Debug($"Run_Clean: Passes '{passes}', Disk_Char = '{disk}', CleanModes = '{cm}'");
-			string args = @$"{C_ARG_FORCE_PATH} {C_ARG_REMOVE_RO} {C_ARG_RECURSE} {cm.ToArgs()} {disk}:";
+			_logger.Value.Debug($"Run_Clean: Passes '{passes}', LogDisk = '{disk}', CleanModes = '{cm}'");
+			string args = @$"{C_ARG_FORCE_PATH} {C_ARG_REMOVE_RO} {C_ARG_RECURSE} {cm.ToArgs()} {disk.DiskLetter}:";
 			StartSDeleteCore(passes, args);
 		}
 

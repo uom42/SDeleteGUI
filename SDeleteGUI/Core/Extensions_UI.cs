@@ -25,15 +25,14 @@ namespace uom.Extensions
 			cbo.Enabled = false;
 		}
 
-		public static void FillAndSelectLast(this ComboBox cbo, object[] data, bool enable)
+		public static void FillAndSelectLast(this ComboBox cbo, object[] data, bool enable, bool selectLast = true)
 		{
 			cbo.Enabled = enable;
 			cbo.Items.Clear();
 			if (data.Any())
 			{
 				cbo.Items.AddRange(data);
-				cbo.SelectedItem = data.Last();
-
+				if (selectLast) cbo.SelectedItem = data.Last();
 			}
 		}
 	}
