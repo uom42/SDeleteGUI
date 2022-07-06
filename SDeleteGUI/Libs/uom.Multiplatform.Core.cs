@@ -6594,7 +6594,7 @@ namespace uom
 				_ = action ?? throw new ArgumentNullException(nameof(action));
 				try
 				{
-					action.Invoke();
+					action!.Invoke();
 					return true;
 				}
 				catch { return false; }

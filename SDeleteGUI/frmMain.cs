@@ -10,6 +10,7 @@ using NLog.Fluent;
 using SDeleteGUI.Core;
 using SDeleteGUI.Core.SDelete;
 
+using static System.Windows.Forms.LinkLabel;
 using static SDeleteGUI.Core.SDelete.SDeleteManager;
 
 namespace SDeleteGUI
@@ -51,6 +52,9 @@ Do you want to specify it manualy ?";
 				_logger.Value.Debug($"FormClosing, CloseReason = {e.CloseReason}");
 				if (e.CloseReason == CloseReason.UserClosing) _sdmgr!.Stop();
 			};
+
+
+			lblSDeleteBinPathTitle.LinkClicked += OnSDBinary_LinkClicked;
 
 			optSource_PhyDisk.CheckedChanged += (_, _) => OnSourceChanged();
 			optSource_LogDisk.CheckedChanged += (_, _) => OnSourceChanged();
@@ -120,13 +124,18 @@ Do you want to specify it manualy ?";
 
 			try
 			{
-				lblSDeleteBinPath.Text = _sdmgr!.SDeleteBinary.FullName;
-				//txtSource_Dir.Text = @"E:\_222 — копия";
+				const string C_SDELETE = "SDelete";
+				const string C_PREFIX = C_SDELETE + " binary location: ";
+				string txt = C_PREFIX + _sdmgr!.SDeleteBinary.FullName;
+				lblSDeleteBinPathTitle.Links.Clear();
+				lblSDeleteBinPathTitle.Text = txt;
+				lblSDeleteBinPathTitle.Links.Add(0, C_SDELETE.Length);
+				lblSDeleteBinPathTitle.Links.Add(C_PREFIX.Length, txt.Length - C_PREFIX.Length);
 
+				lblSDeleteBinPath.Text = _sdmgr!.SDeleteBinary.FullName;
 
 				optSource_PhyDisk.Checked = true;
-				//OnSourceChanged();
-
+				optCleanMode_Clean.Checked = true;
 
 				await FillDisksList();
 
@@ -139,14 +148,11 @@ Do you want to specify it manualy ?";
 				lblSDeleteBinPath.Text = ex.Message;
 				return;
 			}
-			finally
-			{
-				UpdateUI();
-			}
+			finally { UpdateUI(); }
 		}
 
 
-		/// <summary>Load Physical disk list from WMI</summary>
+		/// <summary>Load disk list</summary>
 		private async Task FillDisksList()
 		{
 			_logger.Value.Debug($"FillDisksList");
@@ -496,6 +502,16 @@ Do you want to specify it manualy ?";
 		{
 			TimeSpan tsElapsed = DateTime.Now - _dtStarted;
 			lblStatus.Text = $"{tsElapsed.e_ToShellTimeString(8)} since the beginning";
+		}
+
+		private void OnSDBinary_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			Link ll = e.Link;
+
+			if (ll.Start == 0)
+				@"https://docs.microsoft.com/en-us/sysinternals/downloads/sdelete".e_OpenURLInBrowser();
+			else
+				new Action(() => _sdmgr!.SDeleteBinary.e_OpenExplorer()).e_RunTryCatch();
 		}
 	}
 }

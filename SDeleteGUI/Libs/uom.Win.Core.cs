@@ -4815,7 +4815,15 @@ namespace uom
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static void e_OpenURLInBrowser(this string sURL) => Process.Start(sURL);
+			internal static void e_OpenURLInBrowser(this string uri)
+			{
+				ProcessStartInfo psi = new()
+				{
+					UseShellExecute = true,
+					FileName = uri
+				};
+				Process.Start(psi);
+			}
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
