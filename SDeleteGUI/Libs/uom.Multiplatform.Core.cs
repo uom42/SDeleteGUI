@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Drawing;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -12,6 +14,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+
+using static uom.WinAPI.Memory;
+
 
 #nullable enable
 
@@ -38,8 +43,6 @@ public static void ThrowWhenNull([NotNull] object? value, string valueExpression
 See All # Constants: https://docs.microsoft.com/ru-ru/dotnet/csharp/language-reference/preprocessor-directives
 */
 #endregion
-
-
 #region NET Versions
 //https://docs.microsoft.com/ru-ru/dotnet/standard/frameworks
 
@@ -47,27 +50,20 @@ See All # Constants: https://docs.microsoft.com/ru-ru/dotnet/csharp/language-ref
 //NETFRAMEWORK, NET48, NET472, NET471, NET47, NET462, NET461, NET46, NET452, NET451, NET45, NET40, NET35, NET20
 //NET48_OR_GREATER, NET472_OR_GREATER, NET471_OR_GREATER, NET47_OR_GREATER, NET462_OR_GREATER, NET461_OR_GREATER, NET46_OR_GREATER, NET452_OR_GREATER, NET451_OR_GREATER, NET45_OR_GREATER, NET40_OR_GREATER, NET35_OR_GREATER, NET20_OR_GREATER
 #endregion
-
 #region .NET Standard
 //NETSTANDARD, NETSTANDARD2_1, NETSTANDARD2_0, NETSTANDARD1_6, NETSTANDARD1_5, NETSTANDARD1_4, NETSTANDARD1_3, NETSTANDARD1_2, NETSTANDARD1_1, NETSTANDARD1_0
 //NETSTANDARD2_1_OR_GREATER, NETSTANDARD2_0_OR_GREATER, NETSTANDARD1_6_OR_GREATER, NETSTANDARD1_5_OR_GREATER, NETSTANDARD1_4_OR_GREATER, NETSTANDARD1_3_OR_GREATER, NETSTANDARD1_2_OR_GREATER, NETSTANDARD1_1_OR_GREATER, NETSTANDARD1_0_OR_GREATER
 #endregion
-
 #region .NET 5+ (и .NET Core)
 //NET, NET6_0, NET6_0_ANDROID, NET6_0_IOS, NET6_0_MACOS, NET6_0_MACCATALYST, NET6_0_TVOS, NET6_0_WINDOWS, NET5_0, NETCOREAPP, NETCOREAPP3_1, NETCOREAPP3_0, NETCOREAPP2_2, NETCOREAPP2_1, NETCOREAPP2_0, NETCOREAPP1_1, NETCOREAPP1_0
 //NET6_0_OR_GREATER, NET6_0_ANDROID_OR_GREATER, NET6_0_IOS_OR_GREATER, NET6_0_MACOS_OR_GREATER, NET6_0_MACCATALYST_OR_GREATER, NET6_0_TVOS_OR_GREATER, NET6_0_WINDOWS_OR_GREATER, NET5_0_OR_GREATER, NETCOREAPP_OR_GREATER, NETCOREAPP3_1_OR_GREATER, NETCOREAPP3_0_OR_GREATER, NETCOREAPP2_2_OR_GREATER, NETCOREAPP2_1_OR_GREATER, NETCOREAPP2_0_OR_GREATER, NETCOREAPP1_1_OR_GREATER, NETCOREAPP1_0_OR_GREATER
 #endregion
-
 #region Versions samples
-
 #if NET6_0_WINDOWS || NET5_0_OR_GREATER || NET6_0_OR_GREATER || NET6_0_ANDROID || NET6_0_MACOS || NET6_0_IOS
 #endif
-
 #if NET48_OR_GREATER
 #endif
-
 #endregion
-
 #endregion
 
 //if (e is MethodCallExpression { Method.Name: "MethodName" })
@@ -218,8 +214,6 @@ See All # Constants: https://docs.microsoft.com/ru-ru/dotnet/csharp/language-ref
 		}    
  */
 #endregion
-
-
 #region stackalloc vs fixed
 /*		
 	Выражение stackalloc выделяет блок памяти в стеке. Выделенный в стеке блок памяти, который создает этот метод,
@@ -284,14 +278,10 @@ See All # Constants: https://docs.microsoft.com/ru-ru/dotnet/csharp/language-ref
 
 */
 #endregion
-
-
 #region with
 //https://docs.microsoft.com/ru-ru/dotnet/csharp/language-reference/operators/with-expression
 
 #endregion
-
-
 #region Шаблоны списков c# 11
 /*		
 
@@ -364,23 +354,17 @@ foreach (var record in ReadRecords())
 
 */
 #endregion
-
-
 #region EventHandler
 /*
 	public event EventHandler<string> LineRead = delegate { };	
 */
 #endregion
-
-
 #region VOLATILE (Multithreading)
 /*
 	https://docs.microsoft.com/ru-ru/dotnet/csharp/language-reference/keywords/volatile
 	public volatile int sharedStorage;
 */
 #endregion
-
-
 #region YIELD - In IEnumerations RETURN
 /*
 	public static IEnumerable<int> AllIndexesOf(this string str, string searchstring)
@@ -394,8 +378,6 @@ foreach (var record in ReadRecords())
 	}
 */
 #endregion
-
-
 #region CATCH WHEN
 /*
 	var client = new HttpClient();
@@ -419,8 +401,6 @@ foreach (var record in ReadRecords())
 	} 
 */
 #endregion
-
-
 #region List Ranges And Indexes https://docs.microsoft.com/ru-ru/dotnet/csharp/whats-new/tutorials/ranges-indexes
 /* 
 	string[] words = new string[]
@@ -438,8 +418,6 @@ foreach (var record in ReadRecords())
 	Console.WriteLine($"The last word is {words[^1]}");
 */
 #endregion
-
-
 #region LINQ GroupBy Sample
 /*
 *** VB
@@ -469,8 +447,6 @@ foreach (var nameGroup in groupByLastNamesQuery)
 //Also see .ToLookup() for any lists
 //https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.tolookup?view=netframework-4.8&f1url=%3FappId%3DDev16IDEF1%26l%3DEN-US%26k%3Dk(System.Linq.Enumerable.ToLookup%60%602);k(TargetFrameworkMoniker-.NETFramework,Version%253Dv4.8);k(DevLang-csharp)%26rd%3Dtrue
 #endregion
-
-
 #region RegEx Samples
 /*
 	private static readonly Regex SpacesPattern = new(@"\s");
@@ -508,8 +484,6 @@ foreach (var nameGroup in groupByLastNamesQuery)
 	End With
 */
 #endregion
-
-
 #region ASYNC_AWAIT SAMPLE
 /*
 
@@ -774,12 +748,6 @@ private static async Task<int> AnotherSlowCalculation()
 // cancellationToken.Cancel();
 */
 #endregion
-
-
-
-
-
-
 /// <summary>Commnon Tools For Net Multiplatform
 /// (C) UOM 2000-2021 </summary>
 namespace uom
@@ -6461,7 +6429,128 @@ namespace uom
 				}
 			}
 		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal static partial class Extensions_UI
+		{
+			[Flags]
+			public enum MsgBoxFlags : uint
+			{
+				Btn_OK = 0,
+				Btn_OKCancel = 1,
+				Btn_AbortRetryIgnore = 2,
+				Btn_YesNoCancel = 3,
+				Btn_YesNo = 4,
+				Btn_RetryCancel = 5,
+				Btn_CancelTryContinue = 6,
 
+				Inc_None = 8,
+				Inc_Hand = 9,
+				Inc_Stop = 10,
+				Inc_Error = 11,
+				Inc_Question = 12,
+				Inc_Exclamation = 13,
+				Inc_Warning = 14,
+				Inc_Asterisk = 15,
+				Inc_Information = 16,
+
+				DefBtn_1 = 32,
+				DefBtn_2 = 33,
+				DefBtn_3 = 34,
+				DefBtn_4 = 35
+			}
+
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private static (
+				MessageBoxButtons Buttons,
+				MessageBoxIcon Icon,
+				MessageBoxDefaultButton DefaultButton
+				) ParseMsgboxFlags(MsgBoxFlags flags)
+			{
+				MessageBoxButtons btn = MessageBoxButtons.OK;
+				if (flags.HasFlag(MsgBoxFlags.Btn_OKCancel)) btn = MessageBoxButtons.OKCancel;
+				else if (flags.HasFlag(MsgBoxFlags.Btn_AbortRetryIgnore)) btn = MessageBoxButtons.AbortRetryIgnore;
+				else if (flags.HasFlag(MsgBoxFlags.Btn_YesNoCancel)) btn = MessageBoxButtons.YesNoCancel;
+				else if (flags.HasFlag(MsgBoxFlags.Btn_YesNo)) btn = MessageBoxButtons.YesNo;
+				else if (flags.HasFlag(MsgBoxFlags.Btn_RetryCancel)) btn = MessageBoxButtons.RetryCancel;
+				else if (flags.HasFlag(MsgBoxFlags.Btn_CancelTryContinue)) btn = MessageBoxButtons.CancelTryContinue;
+
+				MessageBoxIcon icn = MessageBoxIcon.None;
+				if (flags.HasFlag(MsgBoxFlags.Inc_Hand)) icn = MessageBoxIcon.Hand;
+				else if (flags.HasFlag(MsgBoxFlags.Inc_Stop)) icn = MessageBoxIcon.Stop;
+				else if (flags.HasFlag(MsgBoxFlags.Inc_Error)) icn = MessageBoxIcon.Error;
+				else if (flags.HasFlag(MsgBoxFlags.Inc_Question)) icn = MessageBoxIcon.Question;
+				else if (flags.HasFlag(MsgBoxFlags.Inc_Exclamation)) icn = MessageBoxIcon.Exclamation;
+				else if (flags.HasFlag(MsgBoxFlags.Inc_Warning)) icn = MessageBoxIcon.Warning;
+				else if (flags.HasFlag(MsgBoxFlags.Inc_Asterisk)) icn = MessageBoxIcon.Asterisk;
+				else if (flags.HasFlag(MsgBoxFlags.Inc_Information)) icn = MessageBoxIcon.Information;
+
+				MessageBoxDefaultButton dbtn = MessageBoxDefaultButton.Button1;
+				if (flags.HasFlag(MsgBoxFlags.DefBtn_2)) dbtn = MessageBoxDefaultButton.Button2;
+				else if (flags.HasFlag(MsgBoxFlags.DefBtn_3)) dbtn = MessageBoxDefaultButton.Button3;
+				else if (flags.HasFlag(MsgBoxFlags.DefBtn_4)) dbtn = MessageBoxDefaultButton.Button4;
+
+				return (btn, icn, dbtn);
+			}
+
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static DialogResult e_MsgboxShow(
+				this string msg,
+				MsgBoxFlags flags = MsgBoxFlags.Btn_OK | MsgBoxFlags.Inc_Information | MsgBoxFlags.DefBtn_1,
+				string? title = null)
+			{
+				title = title ?? Application.ProductName;
+
+				var ff = ParseMsgboxFlags(flags);
+				DialogResult dr = MessageBox.Show(msg, title!, ff.Buttons, ff.Icon, ff.DefaultButton);
+				return dr;
+			}
+
+			public static DialogResult e_MsgboxAsk(
+				this string question,
+				bool defButtonYes = true,
+				string? title = null)
+			{
+				MsgBoxFlags flg = MsgBoxFlags.Btn_YesNo | MsgBoxFlags.Inc_Question
+					| (defButtonYes
+					? MsgBoxFlags.DefBtn_1
+					: MsgBoxFlags.DefBtn_2);
+
+				return question.e_MsgboxShow(flg, title);
+			}
+
+			public static bool e_MsgboxAskIsYes(
+				this string question,
+				bool defButtonYes = true,
+				string? title = null)
+				=> question.e_MsgboxAsk(defButtonYes, title) == DialogResult.Yes;
+
+
+			public static DialogResult e_MsgboxAskWithCheckbox(
+				this string question,
+				string dialogID,
+				bool defButtonYes = true,
+				string title = "")
+			{
+				MsgBoxFlags flg = MsgBoxFlags.Btn_YesNo | MsgBoxFlags.Inc_Question
+					| (defButtonYes
+					? MsgBoxFlags.DefBtn_1
+					: MsgBoxFlags.DefBtn_2);
+
+				var ff = ParseMsgboxFlags(flg);
+
+				DialogResult dr = uom.MessageBoxWithCheckbox.MessageBox.ShowDialog(
+						dialogID,
+						question,
+						title,
+						"",
+						ff.Buttons,
+						ff.Icon,
+						ff.DefaultButton);
+
+				return dr;
+			}
+
+		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		internal static partial class Extensions_Object
@@ -7410,7 +7499,7 @@ namespace uom
 				return s;
 			}
 
-			
+
 
 			   Usage:
 
@@ -7419,7 +7508,7 @@ namespace uom
 					 (action => { doingSomething = FirstMethodCall(); })
 				 .e_Case<Buzz>
 					 (action => { return false; })
-			 
+
 			 */
 
 		}

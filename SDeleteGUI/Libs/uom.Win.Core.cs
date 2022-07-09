@@ -25,6 +25,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static uom.MessageBoxWithCheckbox.MessageBox;
 
 
 
@@ -126,6 +127,110 @@ namespace uom
 	internal static partial class AppTools
 	{
 
+		internal static partial class AppSettings
+		{
+			/*
+			 
+			private const string KEY_SOFTWARE = @"Software";
+
+			internal static string GetKeyName(bool useVersion = true)
+			{
+				if (string.IsNullOrWhiteSpace(Application.CompanyName)) throw new Exception("Application.CompanyName = NULL!");
+				if (string.IsNullOrWhiteSpace(Application.ProductName)) throw new Exception("Application.ProductName = NULL!");
+
+				string appSettingsRegPath = $"{KEY_SOFTWARE}\\{Application.CompanyName}\\{Application.ProductName}";
+
+				if (useVersion && !string.IsNullOrWhiteSpace(Application.ProductVersion))
+					appSettingsRegPath += @"\" + Application.ProductVersion;
+
+				return appSettingsRegPath;
+			}
+			 */
+
+			internal static RegistryKey OpenRegKey() => Application.UserAppDataRegistry;
+
+			internal static void Save<T>(string name, T val, bool deleteRegistryRecordIfNullValueValue = true)
+			{
+				RegistryKey keySetting = OpenRegKey();
+				keySetting!.e_SetValue(name, val, deleteRegistryRecordIfNullValueValue);
+				keySetting!.Flush();
+			}
+
+			internal static void Delete(string name)
+			{
+				RegistryKey keySetting = OpenRegKey();
+				keySetting?.DeleteValue(name);
+				keySetting?.Flush();
+			}
+
+			internal static T? Get_T<T>(
+				string name,
+				T? defaultValue = default(T),
+				bool searchAllVersions = true,
+				Version? searchVersionBelowOrEqual = null)
+			{
+
+				RegistryKey keyVersionedSettings = OpenRegKey();
+				var versionedValue = keyVersionedSettings.e_GetValueT<T>(name, defaultValue);
+				if (versionedValue.ValueFound) return versionedValue.Value;
+
+				if (searchAllVersions)
+				{
+					//Search other versions...
+					_ = Application.ProductVersion ?? throw new Exception("Application.ProductVersion = null!");
+					searchVersionBelowOrEqual = searchVersionBelowOrEqual ?? new Version(Application.ProductVersion);
+
+					string fullSettingsKeyPathWithVersion = keyVersionedSettings.ToString();
+					string[] pathParts = fullSettingsKeyPathWithVersion.Split(@"\");
+					pathParts = pathParts[0..^1];
+					string fullSettingsKeyPathNoVersion = string.Join(@"\", pathParts);
+					RegistryKey keyAppSettingsNoVersion = fullSettingsKeyPathNoVersion.e_RegOpenKeyByPath(false)!;
+					string[] versionKeyNames = keyAppSettingsNoVersion.GetSubKeyNames();
+					if (!versionKeyNames.Any()) return defaultValue;
+
+					var allVersionsKeys = versionKeyNames
+						.Select(versionKeyName =>
+						{
+							Version? vi = null;
+							try
+							{
+								vi = new(versionKeyName);
+							}
+							catch { }
+							return (KeyName: versionKeyName, KeyVersion: vi);
+						})
+						.Where(v => ((v.KeyVersion != null) && (v.KeyVersion <= searchVersionBelowOrEqual!)))
+						.Select(v =>
+						{
+							Boolean ValueFound = false;
+							T? settingValueInKey = default(T);
+							try
+							{
+								RegistryKey? keyVersioned = keyAppSettingsNoVersion.OpenSubKey(v.KeyName);
+								if (keyVersioned != null)
+								{
+									var valueInReg = keyVersioned.e_GetValueT<T>(name, defaultValue);
+									ValueFound = valueInReg.ValueFound;
+									if (ValueFound) settingValueInKey = valueInReg.Value;
+								}
+							}
+							catch { }
+							return (KeyName: v.KeyName, KeyVersion: v.KeyVersion, ValueFound: ValueFound, Value: settingValueInKey);
+						})
+						.Where(v => v.ValueFound)
+						.OrderBy(v => v.KeyVersion)
+						.ToArray();
+
+					if (allVersionsKeys.Any())
+					{
+						var verLast = allVersionsKeys.Last();
+						return verLast.Value;
+					}
+				}
+				return defaultValue;
+			}
+		}
+
 
 		/// <summary> Ищет во всей сборке классы, унаследованные от заданного </summary>
 		internal static TypeInfo[] GetAllAssemblyClassesDerivedFrom(Type T)
@@ -135,11 +240,6 @@ namespace uom
 			.Where(rT => ReferenceEquals(rT.BaseType, T))
 			.ToArray();
 
-		//internal static Microsoft.VisualBasic.ApplicationServices.AssemblyInfo GetExecutingAssemblyInfo()
-		//{
-		//    var AI = new Microsoft.VisualBasic.ApplicationServices.AssemblyInfo(Assembly.GetExecutingAssembly());
-		//    return AI;
-		//}
 
 		internal static string GetCallingMethodNamespacePart(int Count)
 		{
@@ -714,27 +814,14 @@ namespace uom
 
 			internal const string CS_DEFAULT_CMDLINE_ARG = "\"%1\"";
 
-			internal static void ContextMenu_RegisterForDirectory(
-				string RegistryActionName,
-				string ActionDisplayName,
-				string? executablePath = null,
-				string cmdLineArgsPrefix = "",
-				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
-				=> ContextMenu_RegisterForClass("Directory", RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs);
-
-			internal static void ContextMenu_RegisterForAllFiles(
-				string RegistryActionName,
-				string ActionDisplayName,
-				string? executablePath = null,
-				string cmdLineArgsPrefix = "",
-				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
-				=> ContextMenu_RegisterForClass("*", RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs);
 
 			private const string CS_REG_KEY_SHELL = "shell";
 			private const string CS_REG_KEY_COMMAND = "Command";
 
+			private const string C_REG_CLASS_DIRECTORY = "Directory";
 
-			/// <summary>Регистрация для заданного класса !!!НЕ ПО РАЗРЕШЕНИЮ!!!</summary>
+
+			/// <summary>Register ShellContectMenu for specifed class</summary>
 			/// <param name="HCCRClass">Имя класса в реестре, например 'Directory' 'file' '.exe' 'CorelDraw.Graphic.19' 'brmFile')</param>
 			/// <param name="RegistryActionName">Внутреннее имя ключа операции в реестре, например 'Open'</param>
 			/// <param name="ActionDisplayName">То, что видно в контекстном меню проводника</param>
@@ -756,16 +843,83 @@ namespace uom
 				executablePath ??= System.Windows.Forms.Application.ExecutablePath;//.e_EncloseC();
 
 				string sKey = string.Join(@"\", new[] { HCCRClass, CS_REG_KEY_SHELL, RegistryActionName });
-				using RegistryKey RK = Registry.ClassesRoot.CreateSubKey(sKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
-				//RegistryKey ddd = null;
-				RK.SetValue("", ActionDisplayName);
-				RK.Flush();
+				using RegistryKey keyClass = Registry.ClassesRoot.CreateSubKey(sKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
+				keyClass.SetValue("", ActionDisplayName);
+				keyClass.Flush();
 
-				using RegistryKey hkCommand = RK.CreateSubKey(CS_REG_KEY_COMMAND, RegistryKeyPermissionCheck.ReadWriteSubTree);
-				string commandString = ($"\"{executablePath}\" {cmdLineArgsPrefix} {cmdLineArgs}").Trim();
+				using RegistryKey hkCommand = keyClass.CreateSubKey(CS_REG_KEY_COMMAND, RegistryKeyPermissionCheck.ReadWriteSubTree);
+				string commandString = ContextMenu_CreateRegCommandString(executablePath, cmdLineArgsPrefix, cmdLineArgs);
 				hkCommand.SetValue("", commandString);
 				hkCommand.Flush();
 			}
+			private static string ContextMenu_CreateRegCommandString(
+			   string executablePath,
+			   string? cmdLineArgsPrefix = "",
+			   string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
+				=> ($"\"{executablePath}\" {cmdLineArgsPrefix} {cmdLineArgs}").Trim();
+
+
+			internal static bool ContextMenu_IsRegisteredForClass(
+				string HCCRClass,
+				string RegistryActionName,
+				string ActionDisplayName,
+				string? executablePath = null,
+				string? cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
+			{
+				if (HCCRClass.e_IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(HCCRClass));
+				if (RegistryActionName.e_IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(RegistryActionName));
+				if (ActionDisplayName.e_IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(ActionDisplayName));
+
+				executablePath ??= System.Windows.Forms.Application.ExecutablePath;
+
+				string sKey = string.Join(@"\", new[] { HCCRClass, CS_REG_KEY_SHELL, RegistryActionName });
+				using RegistryKey? keyClass = Registry.ClassesRoot.OpenSubKey(sKey, false);
+				string? defVlue = keyClass?.e_GetValue_StringOrEmpty("");
+				if (defVlue != ActionDisplayName) return false;
+
+				using RegistryKey? hkCommand = keyClass?.OpenSubKey(CS_REG_KEY_COMMAND, false);
+				string commandString = ContextMenu_CreateRegCommandString(executablePath, cmdLineArgsPrefix, cmdLineArgs);
+				string? regCommandValue = hkCommand?.e_GetValue_StringOrEmpty("");
+				if (commandString == regCommandValue) return true;
+				return false;
+			}
+
+
+			internal static void ContextMenu_RegisterForDirectory(
+				string RegistryActionName,
+				string ActionDisplayName,
+				string? executablePath = null,
+				string cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
+				=> ContextMenu_RegisterForClass(C_REG_CLASS_DIRECTORY, RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs);
+
+			internal static bool ContextMenu_IsRegisteredForDirectory(
+				string RegistryActionName,
+				string ActionDisplayName,
+				string? executablePath = null,
+				string cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
+				=> ContextMenu_IsRegisteredForClass(C_REG_CLASS_DIRECTORY, RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs);
+
+
+
+
+
+
+
+			internal static void ContextMenu_RegisterForAllFiles(
+				string RegistryActionName,
+				string ActionDisplayName,
+				string? executablePath = null,
+				string cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
+				=> ContextMenu_RegisterForClass("*", RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs);
+
+
+
+
+
 
 			/// <summary>Регистрация для заданного разрешения !!!НЕ КОАССА!!!</summary>
 			/// <param name="filesExtensions">Разрешение файла, например '.exe' '.png')</param>
@@ -2059,6 +2213,457 @@ namespace uom
 
 	}
 
+
+	namespace MessageBoxWithCheckbox
+	{
+
+		namespace WinAPI_Internals
+		{
+			internal enum CbtHookAction
+			{
+				HCBT_MOVESIZE,
+				HCBT_MINMAX,
+				HCBT_QS,
+				HCBT_CREATEWND,
+				HCBT_DESTROYWND,
+				HCBT_ACTIVATE,
+				HCBT_CLICKSKIPPED,
+				HCBT_KEYSKIPPED,
+				HCBT_SYSCOMMAND,
+				HCBT_SETFOCUS
+			}
+			internal enum HookType
+			{
+				WH_JOURNALRECORD,
+				WH_JOURNALPLAYBACK,
+				WH_KEYBOARD,
+				WH_GETMESSAGE,
+				WH_CALLWNDPROC,
+				WH_CBT,
+				WH_SYSMSGFILTER,
+				WH_MOUSE,
+				WH_HARDWARE,
+				WH_DEBUG,
+				WH_SHELL,
+				WH_FOREGROUNDIDLE,
+				WH_CALLWNDPROCRET,
+				WH_KEYBOARD_LL,
+				WH_MOUSE_LL
+			}
+
+			internal class CbtEventArgs : EventArgs
+			{
+				public IntPtr Handle;
+				public string Title;
+				public string ClassName;
+				public bool IsDialogWindow;
+			}
+
+			internal class HookEventArgs : EventArgs
+			{
+				public int HookCode;
+				public IntPtr wParam;
+				public IntPtr lParam;
+			}
+
+			internal class LocalWindowsHook
+			{
+				public delegate int HookProc(int code, IntPtr wParam, IntPtr lParam);
+				public delegate void HookEventHandler(object sender, HookEventArgs e);
+
+				protected IntPtr _hhook = IntPtr.Zero;
+				protected HookProc m_filterFunc = null;
+				protected HookType m_hookType;
+				public event HookEventHandler HookInvoked;
+
+				protected void OnHookInvoked(HookEventArgs e)
+				{
+					if (this.HookInvoked != null) this.HookInvoked(this, e);
+				}
+
+				public LocalWindowsHook(HookType hook)
+				{
+					m_hookType = hook;
+					m_filterFunc = CoreHookProc;
+				}
+
+				public LocalWindowsHook(HookType hook, HookProc func)
+				{
+					m_hookType = hook;
+					m_filterFunc = func;
+				}
+
+				protected int CoreHookProc(int code, IntPtr wParam, IntPtr lParam)
+				{
+					if (code < 0) return CallNextHookEx(_hhook, code, wParam, lParam);
+
+					HookEventArgs hookEventArgs = new HookEventArgs();
+					hookEventArgs.HookCode = code;
+					hookEventArgs.wParam = wParam;
+					hookEventArgs.lParam = lParam;
+					OnHookInvoked(hookEventArgs);
+					return CallNextHookEx(_hhook, code, wParam, lParam);
+				}
+
+				public void Install()
+				{
+#pragma warning disable CS0618 // Type or member is obsolete
+					#region This is Does Not Work!
+					//m_hhook = SetWindowsHookEx(m_hookType, m_filterFunc, IntPtr.Zero, System.Threading.Thread.CurrentThread.ManagedThreadId);
+					#endregion
+					//int iThread = AppDomain.GetCurrentThreadId();
+					int iThread = GetCurrentThreadId();
+					_hhook = SetWindowsHookEx(m_hookType, m_filterFunc, IntPtr.Zero, iThread);
+#pragma warning restore CS0618 // Type or member is obsolete
+				}
+
+				public void Uninstall() => UnhookWindowsHookEx(_hhook);
+
+				[DllImport("Kernel32.dll")]
+				static extern int GetCurrentThreadId();
+
+				[DllImport("user32.dll")]
+				protected static extern IntPtr SetWindowsHookEx(HookType code, HookProc func, IntPtr hInstance, int threadID);
+
+				[DllImport("user32.dll")]
+				protected static extern int UnhookWindowsHookEx(IntPtr hhook);
+
+				[DllImport("user32.dll")]
+				protected static extern int CallNextHookEx(IntPtr hhook, int code, IntPtr wParam, IntPtr lParam);
+			}
+
+			internal class LocalCbtHook : LocalWindowsHook
+			{
+				public delegate void CbtEventHandler(object sender, CbtEventArgs e);
+				protected IntPtr _hwnd = IntPtr.Zero;
+				protected string m_title = "";
+				protected string m_class = "";
+				protected bool m_isDialog = false;
+				public event CbtEventHandler WindowCreated;
+				public event CbtEventHandler WindowDestroyed;
+				public event CbtEventHandler WindowActivated;
+
+				public LocalCbtHook() : base(HookType.WH_CBT) { base.HookInvoked += CbtHookInvoked; }
+
+				public LocalCbtHook(HookProc func) : base(HookType.WH_CBT, func) { base.HookInvoked += CbtHookInvoked; }
+
+				private void CbtHookInvoked(object sender, HookEventArgs e)
+				{
+					CbtHookAction hookCode = (CbtHookAction)e.HookCode;
+					IntPtr wParam = e.wParam;
+					IntPtr lParam = e.lParam;
+					switch (hookCode)
+					{
+						case CbtHookAction.HCBT_CREATEWND:
+							HandleCreateWndEvent(wParam, lParam);
+							break;
+						case CbtHookAction.HCBT_DESTROYWND:
+							HandleDestroyWndEvent(wParam, lParam);
+							break;
+						case CbtHookAction.HCBT_ACTIVATE:
+							HandleActivateEvent(wParam, lParam);
+							break;
+					}
+				}
+
+				private void HandleCreateWndEvent(IntPtr wParam, IntPtr lParam)
+				{
+					UpdateWindowData(wParam);
+					OnWindowCreated();
+				}
+
+				private void HandleDestroyWndEvent(IntPtr wParam, IntPtr lParam)
+				{
+					UpdateWindowData(wParam);
+					OnWindowDestroyed();
+				}
+
+				private void HandleActivateEvent(IntPtr wParam, IntPtr lParam)
+				{
+					UpdateWindowData(wParam);
+					OnWindowActivated();
+				}
+
+				private void UpdateWindowData(IntPtr wParam)
+				{
+					_hwnd = wParam;
+					StringBuilder stringBuilder = new(40);
+					GetClassName(_hwnd, stringBuilder, 40);
+
+					//uom.WinAPI.Windows.GetClientRect();
+
+					m_class = stringBuilder.ToString();
+					StringBuilder stringBuilder2 = new(256);
+					GetWindowText(_hwnd, stringBuilder2, 256);
+					m_title = stringBuilder2.ToString();
+					m_isDialog = m_class == "#32770";
+				}
+
+				protected virtual void OnWindowCreated()
+				{
+					if (this.WindowCreated != null)
+					{
+						CbtEventArgs e = new CbtEventArgs();
+						PrepareEventData(e);
+						this.WindowCreated(this, e);
+					}
+				}
+
+				protected virtual void OnWindowDestroyed()
+				{
+					if (this.WindowDestroyed != null)
+					{
+						CbtEventArgs e = new CbtEventArgs();
+						PrepareEventData(e);
+						this.WindowDestroyed(this, e);
+					}
+				}
+
+				protected virtual void OnWindowActivated()
+				{
+					if (this.WindowActivated != null)
+					{
+						CbtEventArgs e = new CbtEventArgs();
+						PrepareEventData(e);
+						this.WindowActivated(this, e);
+					}
+				}
+
+				private void PrepareEventData(CbtEventArgs e)
+				{
+					e.Handle = _hwnd;
+					e.Title = m_title;
+					e.ClassName = m_class;
+					e.IsDialogWindow = m_isDialog;
+				}
+
+				[DllImport("user32.dll")]
+				protected static extern int GetClassName(IntPtr hwnd, StringBuilder lpClassName, int nMaxCount);
+
+				[DllImport("user32.dll")]
+				protected static extern int GetWindowText(IntPtr hwnd, StringBuilder lpString, int nMaxCount);
+			}
+
+		}
+
+		internal class MessageBox
+		{
+			protected WinAPI_Internals.LocalCbtHook _apiHook;
+			protected IntPtr _hwnd = IntPtr.Zero;
+			protected IntPtr _hwndCheckBox = IntPtr.Zero;
+			protected bool _bInit = false;
+			protected bool _dialogCheckBoxValue = false;
+			protected string? _checkBoxText;
+
+			public MessageBox()
+			{
+				_apiHook = new WinAPI_Internals.LocalCbtHook();
+				_apiHook.WindowCreated += OnWndCreated;
+				_apiHook.WindowDestroyed += OnWndDestroyed;
+				_apiHook.WindowActivated += OnWndActivated;
+			}
+
+			public static void ClearRegSavedCheckBoxValue(string dialogID)
+			{
+				try
+				{
+					dialogID.e_DeleteSettings();
+					//keyDialogStateStorage = keyDialogStateStorage ?? Application.UserAppDataRegistry;
+					//keyDialogStateStorage.DeleteValue(dialogID);
+				}
+				catch
+				{
+					// No processing needed...the convert might throw an exception,
+					// but if so we proceed as if the value was false.
+				}
+			}
+
+			public const string DEFAULT_CHECKBOX_TEXT = "Don't ask me this again";
+
+			private DialogResult Show(
+			string dialogID,
+			string text,
+			string title = "",
+			string checkBoxText = DEFAULT_CHECKBOX_TEXT,
+			MessageBoxButtons buttons = MessageBoxButtons.OK,
+			MessageBoxIcon icon = MessageBoxIcon.Information,
+			MessageBoxDefaultButton defbtn = MessageBoxDefaultButton.Button1)
+			{
+				//_ = keyDialogStateStorage ?? throw new ArgumentNullException(nameof(keyDialogStateStorage));
+				if (string.IsNullOrWhiteSpace(dialogID)) throw new ArgumentNullException(nameof(dialogID));
+
+				if (string.IsNullOrWhiteSpace(checkBoxText)) checkBoxText = DEFAULT_CHECKBOX_TEXT;
+				if (string.IsNullOrWhiteSpace(title)) title = Application.ProductName;
+
+				try
+				{
+					const int VALUE_INVALID = -1;
+					int? regOldCheckBoxValue = dialogID.e_GetSettings_int(VALUE_INVALID, true);
+
+					if (regOldCheckBoxValue.HasValue
+						&& regOldCheckBoxValue.Value != VALUE_INVALID
+						&& System.Enum.IsDefined(typeof(DialogResult), regOldCheckBoxValue.Value))
+					{
+						//Registry contains some old value & This is valid DialogResult enum
+						DialogResult drReg = (DialogResult)regOldCheckBoxValue;
+						return drReg;
+					}
+				}
+				catch
+				{
+					// No processing needed...the convert might throw an exception,
+					// but if so we proceed as if the value was false.
+				}
+
+				_checkBoxText = checkBoxText;
+				_apiHook.Install();
+				DialogResult dr = System.Windows.Forms.MessageBox.Show(text, title, buttons, icon, defbtn);
+				_apiHook.Uninstall();
+
+				if (_dialogCheckBoxValue) dr.e_SaveSettings(dialogID);//Save User Answer to registry
+
+				return dr;
+			}
+
+			/*
+
+			public DialogResult Show(
+				string dialogID,
+				string text,
+				string title = "",
+				string checkBoxText = DEFAULT_CHECKBOX_TEXT,
+				MessageBoxButtons buttons = MessageBoxButtons.OK,
+				MessageBoxIcon icon = MessageBoxIcon.Information,
+				MessageBoxDefaultButton defbtn = MessageBoxDefaultButton.Button1)
+				=> Show(
+					Application.UserAppDataRegistry,
+					dialogID,
+					text,
+					title,
+					checkBoxText,
+					buttons,
+					icon,
+					defbtn);
+			 */
+
+			public static DialogResult ShowDialog(
+				string dialogID,
+				string text,
+				string title = "",
+				string checkBoxText = DEFAULT_CHECKBOX_TEXT,
+				MessageBoxButtons buttons = MessageBoxButtons.OK,
+				MessageBoxIcon icon = MessageBoxIcon.Information,
+				MessageBoxDefaultButton defbtn = MessageBoxDefaultButton.Button1)
+			{
+				MessageBox dlg = new();
+				return dlg.Show(
+						dialogID,
+						text,
+						title,
+						checkBoxText,
+						buttons,
+						icon,
+						defbtn);
+			}
+
+
+			private void OnWndCreated(object sender, WinAPI_Internals.CbtEventArgs e)
+			{
+				if (e.IsDialogWindow)
+				{
+					_bInit = false;
+					_hwnd = e.Handle;
+				}
+			}
+
+			private void OnWndDestroyed(object sender, WinAPI_Internals.CbtEventArgs e)
+			{
+				if (e.Handle == _hwnd)
+				{
+					_bInit = false;
+					_hwnd = IntPtr.Zero;
+					if (BST_CHECKED == (int)uom.WinAPI.Windows.SendMessage(_hwndCheckBox, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero))
+						_dialogCheckBoxValue = true;
+				}
+			}
+
+			private void OnWndActivated(object sender, WinAPI_Internals.CbtEventArgs e)
+			{
+				if (_hwnd != e.Handle || _bInit) return;
+
+				_bInit = true;
+				// Get the current font, either from the static text window or the message box itself
+				IntPtr hFont;
+				IntPtr hwndText = uom.WinAPI.Windows.GetDlgItem(_hwnd, 0xFFFF);
+				if (hwndText != IntPtr.Zero)
+					hFont = uom.WinAPI.Windows.SendMessage(hwndText, WinAPI.Windows.WindowMessages.WM_GETFONT, IntPtr.Zero, IntPtr.Zero);
+				else
+					hFont = uom.WinAPI.Windows.SendMessage(_hwnd, WinAPI.Windows.WindowMessages.WM_GETFONT, IntPtr.Zero, IntPtr.Zero);
+				Font fCur = Font.FromHfont(hFont);
+
+				// Get the x coordinate for the check box.  Align it with the icon if possible, or one character height in
+				Point ptCheckBoxLocation = new();
+				IntPtr hwndIcon = uom.WinAPI.Windows.GetDlgItem(_hwnd, 0x0014);
+				if (hwndIcon != IntPtr.Zero)
+				{
+					Rectangle rcIcon = uom.WinAPI.Windows.GetWindowRect(hwndIcon);
+					Point pt = rcIcon.Location;
+					uom.WinAPI.Windows.ScreenToClient(_hwnd, ref pt);
+					ptCheckBoxLocation.X = pt.X;
+				}
+				else
+					ptCheckBoxLocation.X = (int)fCur.GetHeight();
+
+				// Get the y coordinate for the check box, which is the bottom of the
+				// current message box client area
+				System.Drawing.Rectangle rcLicent = uom.WinAPI.Windows.GetClientRect(_hwnd);
+				int fontHeight = (int)fCur.GetHeight();
+				ptCheckBoxLocation.Y = rcLicent.Height + fontHeight;
+
+
+				// Resize the message box with room for the check box
+				Rectangle rc = uom.WinAPI.Windows.GetWindowRect(_hwnd);
+				uom.WinAPI.Windows.MoveWindow(_hwnd,
+					rc.Left,
+					rc.Top,
+					rc.Width,
+					rc.Height + (fontHeight * 3),
+					true);
+
+
+				_hwndCheckBox = uom.WinAPI.Windows.CreateWindowEx(
+					0,
+					"button",
+					_checkBoxText!,
+
+					WinAPI.Windows.WindowStyles.BS_AUTOCHECKBOX |
+					WinAPI.Windows.WindowStyles.WS_CHILD |
+					WinAPI.Windows.WindowStyles.WS_VISIBLE |
+					WinAPI.Windows.WindowStyles.WS_TABSTOP,
+
+					ptCheckBoxLocation.X,
+					ptCheckBoxLocation.Y,
+					rc.Width - ptCheckBoxLocation.X,
+					fontHeight,
+					_hwnd,
+					IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+
+				uom.WinAPI.Windows.SendMessage(_hwndCheckBox, WM_SETFONT, hFont, new IntPtr(1));
+			}
+
+			#region Win32 Imports
+			private const int WM_SETFONT = 0x00000030;
+			//private const int WM_GETFONT = 0x00000031;
+			private const int BM_GETCHECK = 0x00F0;
+			private const int BST_CHECKED = 0x0001;
+
+			#endregion
+		}
+	}
+
+
+
 #pragma warning disable IDE1006 // Naming Styles
 
 	namespace Extensions
@@ -3000,11 +3605,11 @@ namespace uom
 
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static bool? e_GetValue_Bool(RegistryKey? hRegKey, string ValueName, bool DefaultValue = false)
+			public static bool? e_GetValue_Bool(this RegistryKey? hRegKey, string ValueName, bool DefaultValue = false)
 				=> (1 == e_GetValue_Int32(hRegKey, ValueName, DefaultValue ? 1 : 0));
 
 
-			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			//[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static void e_SetValue<T>(this RegistryKey hRegKey,
 									   string name,
 									   T value,
@@ -3022,12 +3627,68 @@ namespace uom
 					case string[] ss: hRegKey.SetValue(name, ss, RegistryValueKind.MultiString); break;
 					case Int32 i32: hRegKey.SetValue(name, i32, RegistryValueKind.DWord); break;
 					case Int64 i64: hRegKey.SetValue(name, i64, RegistryValueKind.QWord); break;
+					case bool b: hRegKey.SetValue(name, (b ? 1 : 0), RegistryValueKind.DWord); break;
+					case Enum e: hRegKey.SetValue(name, e, RegistryValueKind.DWord); break;
 					case byte[] data: hRegKey.SetValue(name, data, RegistryValueKind.Binary); break;
 
 					default: throw new ArgumentOutOfRangeException($"Unknown type of '{nameof(value)}' = '{typeof(T)}'");
 				}
 				//RegistryValueKind RegType = RegistryValueKind.DWord,
 				//hRegKey.SetValue(ValueName, ObjValue, RegType); //Record Value
+			}
+
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static void e_SaveSettings<T>(this T val, string name, bool deleteRegistryRecordIfNullValueValue = true)
+				=> uom.AppTools.AppSettings.Save(name, val, deleteRegistryRecordIfNullValueValue);
+
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static void e_DeleteSettings(this string name) => uom.AppTools.AppSettings.Delete(name);
+
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static T? e_GetSettings<T>(
+				this string name,
+				T? defaultValue,
+				bool searchAllVersions = true,
+				Version? searchVersionBelowOrEqual = null)
+				=> uom.AppTools.AppSettings.Get_T<T>(name,
+					defaultValue,
+					searchAllVersions,
+					searchVersionBelowOrEqual);
+
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static int e_GetSettings_int(
+				this string name,
+				int defaultValue = 0,
+				bool searchAllVersions = true,
+				Version? searchVersionBelowOrEqual = null)
+				=> name.e_GetSettings<int>(defaultValue, searchAllVersions, searchVersionBelowOrEqual);
+
+			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static string? e_GetSettings_str(
+				this string name,
+				string? defaultValue = null,
+				bool searchAllVersions = true,
+				Version? searchVersionBelowOrEqual = null)
+				=> name.e_GetSettings<string>(defaultValue, searchAllVersions, searchVersionBelowOrEqual);
+
+			public static RegistryKey e_RegGetRootKey(this string rootKeyName)
+				=> rootKeyName switch
+				{
+					"HKEY_CLASSES_ROOT" => Registry.ClassesRoot,
+					"HKEY_CURRENT_USER" => Registry.CurrentUser,
+					"HKEY_LOCAL_MACHINE" => Registry.LocalMachine,
+					"HKEY_USERS" => Registry.Users,
+					_ => throw new ArgumentOutOfRangeException(nameof(rootKeyName))
+				};
+
+			//			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static RegistryKey? e_RegOpenKeyByPath(this string fullPath, bool writable)
+			{
+				string[] pathParts = fullPath.Split(@"\");
+				string rootKeyName = pathParts[0];
+				RegistryKey keyRoot = rootKeyName.e_RegGetRootKey();
+				fullPath = String.Join(@"\", pathParts[1..]);
+				return keyRoot.OpenSubKey(fullPath, writable);
 			}
 
 		}
@@ -3078,7 +3739,7 @@ namespace uom
 
 
 			/*
-			 
+
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static async Task e_RunOnDisabledAsync(this IEnumerable<Control>? actls, Task a)
 			{
@@ -31486,6 +32147,12 @@ namespace uom
 			[In] IntPtr wParam,
 			[In] IntPtr lParam);
 
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			internal static extern IntPtr SendMessage(
+				[In] IntPtr hwnd,
+				[In] int wMsg,
+				[In] IntPtr wParam,
+				[In] IntPtr lParam);
 
 			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
 			internal static extern IntPtr SendMessage(
@@ -31512,7 +32179,6 @@ namespace uom
 
 
 			#endregion
-
 
 
 			#region AppCommand
@@ -31649,17 +32315,111 @@ namespace uom
 			internal static extern IntPtr GetDesktopWindow();
 
 
-			[DllImport(core.WINDLL_USER)]
-			private static extern int GetClientRect(
-				[In] IntPtr hwnd,
-				[In, Out] ref System.Drawing.Rectangle rc);
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			internal static extern IntPtr GetDlgItem(IntPtr hwnd, int id);
 
-			public static Rectangle GetClientRect(IWin32Window wind)
+
+
+			internal enum WindowStyles : int
+			{
+				WS_VISIBLE = 0x10000000,
+				WS_CHILD = 0x40000000,
+				WS_TABSTOP = 0x00010000,
+
+				BS_AUTOCHECKBOX = 0x00000003
+			}
+
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			internal static extern IntPtr CreateWindowEx(
+					int dwExStyle,          // extended window style
+					string lpClassName,     // registered class name
+					string lpWindowName,    // window name
+					WindowStyles dwStyle,            // window style
+					int x,                  // horizontal position of window
+					int y,                  // vertical position of window
+					int nWidth,             // window width
+					int nHeight,            // window height
+					IntPtr hWndParent,      // handle to parent or owner window
+					IntPtr hMenu,           // menu handle or child identifier
+					IntPtr hInstance,       // handle to application instance
+					IntPtr lpParam          // window-creation data
+					);
+
+
+
+
+
+
+
+
+
+			//protected static extern int ScreenToClient(IntPtr hwnd, ref POINT pt);
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			internal static extern int ScreenToClient(IntPtr hwnd, [In, Out] ref System.Drawing.Point pt);
+
+
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			private static extern int GetClientRect([In] IntPtr hwnd, [In, Out] ref System.Drawing.Rectangle rc);
+
+			internal static Rectangle GetClientRect(IntPtr hwnd)
 			{
 				Rectangle rcClient = new();
-				_ = GetClientRect(wind.Handle, ref rcClient);
+				_ = GetClientRect(hwnd, ref rcClient);
 				return rcClient;
 			}
+
+			internal static Rectangle GetClientRect(IWin32Window wind) => GetClientRect(wind.Handle);
+
+
+
+
+			[StructLayout(LayoutKind.Sequential)]
+			private struct RECT
+			{
+				public int Left;
+				public int Top;
+				public int Right;
+				public int Bottom;
+
+
+				public int Width => Right - Left;
+				public int Height => Bottom - Top;
+
+				public Point Location => new(Left, Top);
+
+				public Rectangle ToRectangle() => new(Left, Top, Width, Height);
+			}
+
+
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			private static extern int GetWindowRect(IntPtr hwnd, [In, Out] ref RECT rc);
+
+			internal static Rectangle GetWindowRect(IntPtr hwnd)
+			{
+				RECT rc = new();
+				_ = GetWindowRect(hwnd, ref rc);
+				return rc.ToRectangle();
+			}
+
+
+
+
+
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			internal static extern void MoveWindow(IntPtr hwnd, int x, int y, int nWidth, int nHeight, bool bRepaint);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 			public enum TextBoxMessages : int
@@ -31667,12 +32427,6 @@ namespace uom
 				//WM_PAINT = 0xF,
 				EM_SETCUEBANNER = 0x1501
 			}
-
-			/*
-
-
-
-	*/
 
 		}
 

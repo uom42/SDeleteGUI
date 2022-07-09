@@ -143,8 +143,6 @@ Do you want to specify it manualy ?";
 				lblSDeleteBinPath.Links.Add(0, C_SDELETE.Length);
 				lblSDeleteBinPath.Links.Add(C_PREFIX.Length, txt.Length - C_PREFIX.Length);
 
-				lblSDeleteBinPath.Text = _sdmgr!.SDeleteBinary.FullName;
-
 				optSource_PhyDisk.Checked = true;
 				optCleanMode_Clean.Checked = true;
 
@@ -164,6 +162,7 @@ Do you want to specify it manualy ?";
 		private void _Shown()
 		{
 			_tbm.Value.SetProgressState(TaskbarProgressBarState.NoProgress);
+			ShellRegister(true);
 		}
 
 

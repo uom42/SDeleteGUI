@@ -4,7 +4,7 @@
 
 namespace uom.Extensions
 {
-	internal static class Extensions_UI
+	internal static class Extensions_UI2
 	{
 
 		public static void DisabeAndShowBanner(this ComboBox cbo, string bannerText)

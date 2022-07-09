@@ -1,8 +1,11 @@
 {
   "profiles": {
-    "SDeleteGUI": {
+    "Test CMDLine dir": {
       "commandName": "Project",
       "commandLineArgs": "dir\r\n\"T:\\_Temp\""
+    },
+    "CMDLine empty": {
+      "commandName": "Project"
     }
   }
 }

@@ -23,8 +23,6 @@ namespace SDeleteGUI
 	internal static class Program
 	{
 
-		internal const string C_SHELL_CONTEXTMENU_MENU_ARG_CLEAN_DIR = "dir";
-
 		private static Lazy<Logger> _logger = new(LogManager.GetCurrentClassLogger());
 
 		/// <summary>The main entry point for the application.</summary>
@@ -38,9 +36,6 @@ namespace SDeleteGUI
 				Application.SetHighDpiMode(HighDpiMode.SystemAware);
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
-
-				ShellRegisterAsync(true);
-
 				Application.Run(new frmMain());
 			}
 			catch (Exception ex)
@@ -49,30 +44,6 @@ namespace SDeleteGUI
 			}
 		}
 
-
-
-
-		private static void ShellRegisterAsync(bool regisster)
-			=> new Task(() => ShellRegister(regisster), TaskCreationOptions.LongRunning).Start();
-
-		private static void ShellRegister(bool regisster)
-		{
-			const string C_SHELL_CONTEXTMENU_MENU_TITLE_PREFIX = "¤ ";
-			const string C_SHELL_CONTEXTMENU_MENU_TITLE = C_SHELL_CONTEXTMENU_MENU_TITLE_PREFIX + "Clean";
-			const string C_SHELL_CONTEXTMENU_MENU_REGVALUE = "UOM_Clean";
-
-
-			_logger.Value.Debug($"ShellRegister({regisster})");
-			if (regisster)
-			{
-				uom.OS.Shell.ContextMenu_RegisterForDirectory(
-					C_SHELL_CONTEXTMENU_MENU_REGVALUE,
-					C_SHELL_CONTEXTMENU_MENU_TITLE,
-					 null,
-					 C_SHELL_CONTEXTMENU_MENU_ARG_CLEAN_DIR);
-			}
-
-		}
 
 
 		private static void TEST()
