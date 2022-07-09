@@ -32,10 +32,6 @@ namespace SDeleteGUI
 					null,
 					C_SHELL_CONTEXTMENU_MENU_ARG_CLEAN_DIR);
 
-#if DEBUG
-				AlreadyRegistered = false;
-#endif
-
 				if (AlreadyRegistered)
 				{
 					_logger.Value.Debug($"ShellRegister - Already registered OK.");
