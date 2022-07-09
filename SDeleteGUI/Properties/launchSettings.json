@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SDeleteGUI": {
+      "commandName": "Project",
+      "commandLineArgs": "dir\r\n\"T:\\_Temp\""
+    }
+  }
+}

@@ -156,7 +156,7 @@ namespace SDeleteGUI.Core.SDelete
 			else
 				args += @$"""{dirToClean}""";
 
-			string mutexName = $"{Application.ProductName}-{dirToClean}";
+			string mutexName = $"{Application.ProductName}-{dirToClean.ToString().GetHashCode()}";
 			StartSDeleteCore(passes, args, mutexName, dirToClean.ToString());
 		}
 
