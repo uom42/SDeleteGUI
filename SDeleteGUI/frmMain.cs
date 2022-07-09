@@ -12,6 +12,7 @@ using SDeleteGUI.Core.SDelete;
 
 using static System.Windows.Forms.LinkLabel;
 using static SDeleteGUI.Core.SDelete.SDeleteManager;
+using static uom.WinAPI.Memory;
 
 namespace SDeleteGUI
 {
@@ -47,14 +48,24 @@ Do you want to specify it manualy ?";
 			Text = $"{Application.ProductName} {Application.ProductVersion}";
 
 			this.Load += async (_, _) => await _Load();
+			this.Shown += (_, _) => _Shown();
 			this.FormClosing += (s, e) =>
 			{
 				_logger.Value.Debug($"FormClosing, CloseReason = {e.CloseReason}");
-				if (e.CloseReason == CloseReason.UserClosing) _sdmgr!.Stop();
+				if (e.CloseReason == CloseReason.UserClosing && _isRunning)
+				{
+					string msg = "The cleanup operation is still in progress!\n\nCancel cleaning?";
+					if (MessageBox.Show(msg, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+					{
+						e.Cancel = true;
+						return;
+					}
+					_sdmgr!.Stop();
+				}
 			};
 
 
-			lblSDeleteBinPathTitle.LinkClicked += OnSDBinary_LinkClicked;
+			lblSDeleteBinPath.LinkClicked += OnSDBinary_LinkClicked;
 
 			optSource_PhyDisk.CheckedChanged += (_, _) => OnSourceChanged();
 			optSource_LogDisk.CheckedChanged += (_, _) => OnSourceChanged();
@@ -127,10 +138,10 @@ Do you want to specify it manualy ?";
 				const string C_SDELETE = "SDelete";
 				const string C_PREFIX = C_SDELETE + " binary location: ";
 				string txt = C_PREFIX + _sdmgr!.SDeleteBinary.FullName;
-				lblSDeleteBinPathTitle.Links.Clear();
-				lblSDeleteBinPathTitle.Text = txt;
-				lblSDeleteBinPathTitle.Links.Add(0, C_SDELETE.Length);
-				lblSDeleteBinPathTitle.Links.Add(C_PREFIX.Length, txt.Length - C_PREFIX.Length);
+				lblSDeleteBinPath.Links.Clear();
+				lblSDeleteBinPath.Text = txt;
+				lblSDeleteBinPath.Links.Add(0, C_SDELETE.Length);
+				lblSDeleteBinPath.Links.Add(C_PREFIX.Length, txt.Length - C_PREFIX.Length);
 
 				lblSDeleteBinPath.Text = _sdmgr!.SDeleteBinary.FullName;
 
@@ -139,8 +150,7 @@ Do you want to specify it manualy ?";
 
 				await FillDisksList();
 
-				_tbm.Value.SetProgressState(TaskbarProgressBarState.NoProgress);
-
+				ProcessCMDLine();
 			}
 			catch (Exception ex)
 			{
@@ -149,6 +159,11 @@ Do you want to specify it manualy ?";
 				return;
 			}
 			finally { UpdateUI(); }
+		}
+
+		private void _Shown()
+		{
+			_tbm.Value.SetProgressState(TaskbarProgressBarState.NoProgress);
 		}
 
 

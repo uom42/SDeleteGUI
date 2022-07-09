@@ -712,21 +712,23 @@ namespace uom
 
 			#region Shell_RegisterContextMenu
 
-			internal const string CS_DEFAULT_CMDLINE_ARG = " \"%1\"";
+			internal const string CS_DEFAULT_CMDLINE_ARG = "\"%1\"";
 
 			internal static void ContextMenu_RegisterForDirectory(
 				string RegistryActionName,
 				string ActionDisplayName,
-				string? ExecutablePath = null,
-				string CmdLineArgument = CS_DEFAULT_CMDLINE_ARG)
-				=> ContextMenu_RegisterForClass("Directory", RegistryActionName, ActionDisplayName, ExecutablePath, CmdLineArgument);
+				string? executablePath = null,
+				string cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
+				=> ContextMenu_RegisterForClass("Directory", RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs);
 
 			internal static void ContextMenu_RegisterForAllFiles(
 				string RegistryActionName,
 				string ActionDisplayName,
-				string? ExecutablePath = null,
-				string CmdLineArgument = CS_DEFAULT_CMDLINE_ARG)
-				=> ContextMenu_RegisterForClass("*", RegistryActionName, ActionDisplayName, ExecutablePath, CmdLineArgument);
+				string? executablePath = null,
+				string cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
+				=> ContextMenu_RegisterForClass("*", RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs);
 
 			private const string CS_REG_KEY_SHELL = "shell";
 			private const string CS_REG_KEY_COMMAND = "Command";
@@ -743,20 +745,25 @@ namespace uom
 				string HCCRClass,
 				string RegistryActionName,
 				string ActionDisplayName,
-				string? ExecutablePath = null,
-				string CmdLineArgument = " %1")
+				string? executablePath = null,
+				string? cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
 			{
 				if (HCCRClass.e_IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(HCCRClass));
 				if (RegistryActionName.e_IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(RegistryActionName));
 				if (ActionDisplayName.e_IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(ActionDisplayName));
 
+				executablePath ??= System.Windows.Forms.Application.ExecutablePath;//.e_EncloseC();
+
 				string sKey = string.Join(@"\", new[] { HCCRClass, CS_REG_KEY_SHELL, RegistryActionName });
-				using var RK = Registry.ClassesRoot.CreateSubKey(sKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
+				using RegistryKey RK = Registry.ClassesRoot.CreateSubKey(sKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
+				//RegistryKey ddd = null;
 				RK.SetValue("", ActionDisplayName);
 				RK.Flush();
-				using var hkCommand = RK.CreateSubKey(CS_REG_KEY_COMMAND, RegistryKeyPermissionCheck.ReadWriteSubTree);
-				ExecutablePath ??= System.Windows.Forms.Application.ExecutablePath.e_EncloseC();
-				hkCommand.SetValue("", (ExecutablePath + CmdLineArgument));
+
+				using RegistryKey hkCommand = RK.CreateSubKey(CS_REG_KEY_COMMAND, RegistryKeyPermissionCheck.ReadWriteSubTree);
+				string commandString = ($"\"{executablePath}\" {cmdLineArgsPrefix} {cmdLineArgs}").Trim();
+				hkCommand.SetValue("", commandString);
 				hkCommand.Flush();
 			}
 
@@ -771,10 +778,12 @@ namespace uom
 				string[]? filesExtensions,
 				string RegistryActionName,
 				string ActionDisplayName,
-				string? ExecutablePath = null,
-				string CmdLineArgument = " %1")
+				string? executablePath = null,
+				string cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
 					=> filesExtensions.
-				e_ForEach(ext => ContextMenu_RegisterForFileExt(ext, RegistryActionName, ActionDisplayName, ExecutablePath, CmdLineArgument));
+				e_ForEach(ext =>
+				ContextMenu_RegisterForFileExt(ext, RegistryActionName, ActionDisplayName, executablePath, cmdLineArgsPrefix, cmdLineArgs));
 
 			/// <summary>Регистрация для заданного разрешения !!!НЕ КОАССА!!!</summary>
 			/// <param name="fileExtensionWithDot">Разрешение файла, например '.exe' '.png')</param>
@@ -787,8 +796,9 @@ namespace uom
 				string fileExtensionWithDot,
 				string RegistryActionName,
 				string ActionDisplayName,
-				string? ExecutablePath = null,
-				string CmdLineArgument = " %1")
+				string? executablePath = null,
+				string cmdLineArgsPrefix = "",
+				string cmdLineArgs = CS_DEFAULT_CMDLINE_ARG)
 			{
 				if (fileExtensionWithDot.e_IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(fileExtensionWithDot));
 
@@ -839,8 +849,9 @@ namespace uom
 					fileClass!,
 					RegistryActionName,
 					ActionDisplayName,
-					ExecutablePath,
-					CmdLineArgument);
+					executablePath,
+					cmdLineArgsPrefix,
+					cmdLineArgs);
 			}
 
 			/// <summary>Поиск по всему реестру</summary>

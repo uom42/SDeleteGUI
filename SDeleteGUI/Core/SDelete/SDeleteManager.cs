@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Security.Cryptography;
 using NLog;
+using System.Diagnostics.Metrics;
 
 namespace SDeleteGUI.Core.SDelete
 {
@@ -15,10 +16,9 @@ namespace SDeleteGUI.Core.SDelete
 		internal const string C_SDBIN_FILE = @"sdelete.exe";
 		private const string C_DEFAULT_CHOCOLATEY_SDBIN_DIR = @"C:\ProgramData\chocolatey\lib\sysinternals\tools";
 
-		private Lazy<Logger> _logger = new(LogManager.GetCurrentClassLogger());
+		private const string C_RESOURCE_ALREADY_BUSY = "Resource '{0}' is already in use!";
 
-		public readonly FileInfo SDeleteBinary;
-
+		#region SDelete binary CLI usage
 		/*
 		usage: sdelete [-p passes] [-r] [-s] [-q] <file or directory> [...]
 		sdelete [-p passes] [-z|-c [percent free]] <drive letter [...]>
@@ -37,7 +37,6 @@ namespace SDeleteGUI.Core.SDelete
 
 		internal const string C_ARG_CLEAN_FREE_SPACE = @"-c";
 		internal const string C_ARG_ZERO_FREE_SPACE = @"-z";
-
 		internal const string C_ARG_FORCE_PATH = @"-f";
 		internal const string C_ARG_PASSES = @"-p";
 		internal const string C_ARG_REMOVE_RO = @"-r";
@@ -45,9 +44,18 @@ namespace SDeleteGUI.Core.SDelete
 		internal const string C_ARG_NO_BANNER = @"-nobanner";
 		internal const string C_ARG_ACCEPT_LICENSE = @"/accepteula";
 
-		private Process? runningProcess = null;
-		private Thread? _thCore = null;
+		#endregion
 
+		private Process? _runningProcess = null;
+
+		/// <summary>A thread waiting for an external process to terminate</summary>
+		private Thread? _thCore;
+		private AutoResetEvent _evtCleanFinished = new(false);
+		/// <summary>Blocking mutex to diallow multiintance Disk/folder resource procesing</summary>
+		private Mutex? _mtxLock;
+		private Lazy<Logger> _logger = new(LogManager.GetCurrentClassLogger());
+
+		public readonly FileInfo SDeleteBinary;
 
 		public event EventHandler Finished = delegate { };
 		public event DataReceivedEventHandler OutputRAW = delegate { };
@@ -118,7 +126,9 @@ namespace SDeleteGUI.Core.SDelete
 			_logger.Value.Debug($"Run_Clean: Passes '{passes}', WmiDisk = '{disk}', CleanModes = '{cm}'");
 			if (disk.Partitions > 0) throw new Exception($"Make sure that the disk '{disk}' has no file system volumes!");
 			string args = $"{cm.ToArgs()} {disk.Index}";
-			StartSDeleteCore(passes, args);
+
+			string mutexName = $"{Application.ProductName}-{disk.Index}";
+			StartSDeleteCore(passes, args, mutexName, disk.ToString());
 		}
 
 
@@ -127,7 +137,9 @@ namespace SDeleteGUI.Core.SDelete
 		{
 			_logger.Value.Debug($"Run_Clean: Passes '{passes}', LogDisk = '{disk}', CleanModes = '{cm}'");
 			string args = @$"{C_ARG_FORCE_PATH} {C_ARG_REMOVE_RO} {C_ARG_RECURSE} {cm.ToArgs()} {disk.DiskLetter}:";
-			StartSDeleteCore(passes, args);
+
+			string mutexName = $"{Application.ProductName}-{disk.DiskLetter}";
+			StartSDeleteCore(passes, args, mutexName, disk.ToString());
 		}
 
 
@@ -144,13 +156,13 @@ namespace SDeleteGUI.Core.SDelete
 			else
 				args += @$"""{dirToClean}""";
 
-			StartSDeleteCore(passes, args);
+			string mutexName = $"{Application.ProductName}-{dirToClean}";
+			StartSDeleteCore(passes, args, mutexName, dirToClean.ToString());
 		}
 
 		/// <summary>Clean Directory on disk</summary>
 		public void Run(uint passes, FileInfo[] filesToClean)
 		{
-
 			string allFiles = string.Join(" ", filesToClean
 				.Select(fi => (constants.CC_QUOTE + fi.FullName + constants.CC_QUOTE))
 				.ToArray());
@@ -165,70 +177,86 @@ namespace SDeleteGUI.Core.SDelete
 			}
 
 			string args = C_ARG_REMOVE_RO + " " + allFiles;
-			StartSDeleteCore(passes, args);
+			StartSDeleteCore(passes, args, null, null);
 		}
 
 
-		private void StartSDeleteCore(uint passes, string SDeleteArgs)
+		private void StartSDeleteCore(uint passes, string SDeleteArgs, string? mutexName, string? resourceName)
 		{
-			SDeleteArgs = @$"{C_ARG_ACCEPT_LICENSE} {C_ARG_PASSES} {passes} " + SDeleteArgs;
+			bool isNewMutex = false;
+			Mutex? mtx = string.IsNullOrWhiteSpace(mutexName)
+				? null
+				: new(true, mutexName, out isNewMutex);
 
-			_logger.Value.Debug($"Run_Clean: StartSDeleteCore. Passes '{passes}', SDeleteArgs = '{SDeleteArgs}'");
-
-			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-			//Encoding enc = Encoding.GetEncoding(866);
-			Encoding? enc = null;// Encoding.GetEncoding("866")!;			
-			enc = Encoding.GetEncoding(20866)!;
-			runningProcess = null;
-
-			//ILogger logger = LogManager.GetCurrentClassLogger();
-			string sLog = $"*** RunConsole '{SDeleteBinary}', Args: '{SDeleteArgs}'";
-			Debug.WriteLine(sLog);
-			_logger.Value.Debug(sLog);
-
-			ProcessStartInfo psi = new()
+			try
 			{
-				FileName = SDeleteBinary.FullName,
-				WorkingDirectory = SDeleteBinary.DirectoryName,
-				Arguments = SDeleteArgs,
-				UseShellExecute = false,
+				if (null != mtx && !isNewMutex) throw new(C_RESOURCE_ALREADY_BUSY.e_Format(resourceName!));
 
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
+				SDeleteArgs = @$"{C_ARG_ACCEPT_LICENSE} {C_ARG_PASSES} {passes} " + SDeleteArgs;
 
-				LoadUserProfile = true,
-				CreateNoWindow = true
-			};
+				_logger.Value.Debug($"Run_Clean: StartSDeleteCore. Passes '{passes}', SDeleteArgs = '{SDeleteArgs}'");
 
-			if (null != enc)
-			{
-				psi.StandardOutputEncoding = enc;
-				psi.StandardErrorEncoding = enc;
+				Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+				//Encoding enc = Encoding.GetEncoding(866);
+				Encoding? enc = null;// Encoding.GetEncoding("866")!;			
+				enc = Encoding.GetEncoding(20866)!;
+				_runningProcess = null;
+
+				string sLog = $"*** RunConsole '{SDeleteBinary}', Args: '{SDeleteArgs}'";
+				Debug.WriteLine(sLog);
+				_logger.Value.Debug(sLog);
+
+				ProcessStartInfo psi = new()
+				{
+					FileName = SDeleteBinary.FullName,
+					WorkingDirectory = SDeleteBinary.DirectoryName,
+					Arguments = SDeleteArgs,
+					UseShellExecute = false,
+
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+
+					LoadUserProfile = true,
+					CreateNoWindow = true
+				};
+
+				if (null != enc)
+				{
+					psi.StandardOutputEncoding = enc;
+					psi.StandardErrorEncoding = enc;
+				}
+
+				_runningProcess = Process.Start(psi) ?? throw new ArgumentException($"Failed to start '{SDeleteBinary}'!");
+
+				_thCore = new Thread(CoreThreadProc)
+				{
+					Name = "A waiting thread for SDelete finish",
+					IsBackground = true
+				};
+				_evtCleanFinished = new AutoResetEvent(false);
+				_thCore.Start();
+
+				_mtxLock = mtx;
 			}
-
-			runningProcess = Process.Start(psi) ?? throw new ArgumentException($"Failed to start '{SDeleteBinary.FullName}'!");
-
-			_thCore = new Thread(CoreThreadProc)
+			catch
 			{
-				Name = "Thread waiting for SDelete binary to close",
-				IsBackground = true
-			};
-			_evtCleanFinished = new AutoResetEvent(false);
-			_thCore.Start();
+				mtx?.Dispose();
+				throw;
+			}
 		}
 
 		private void CoreConnect()
 		{
 			_logger.Value.Debug("CoreConnect");
 
-			if (runningProcess == null) throw new ArgumentNullException(nameof(runningProcess));
+			if (_runningProcess == null) throw new ArgumentNullException(nameof(_runningProcess));
 
-			runningProcess.OutputDataReceived += OnCore_Data;
-			runningProcess.ErrorDataReceived += OnCore_Error;
+			_runningProcess.OutputDataReceived += OnCore_Data;
+			_runningProcess.ErrorDataReceived += OnCore_Error;
 
-			runningProcess.BeginOutputReadLine();
-			runningProcess.BeginErrorReadLine();
+			_runningProcess.BeginOutputReadLine();
+			_runningProcess.BeginErrorReadLine();
 		}
 
 
@@ -260,63 +288,63 @@ namespace SDeleteGUI.Core.SDelete
 		}
 
 
-
 		private void CoreDisConnect()
 		{
 			_logger.Value.Debug("CoreDisConnect");
-			if (runningProcess == null) throw new ArgumentNullException(nameof(runningProcess));
-			try { runningProcess!.CancelOutputRead(); } catch { }
-			try { runningProcess!.CancelErrorRead(); } catch { }
+			if (_runningProcess == null) throw new ArgumentNullException(nameof(_runningProcess));
+			try { _runningProcess!.CancelOutputRead(); } catch { }
+			try { _runningProcess!.CancelErrorRead(); } catch { }
 		}
 
-		private AutoResetEvent _evtCleanFinished = new AutoResetEvent(false);
 
 		private void CoreThreadProc()
 		{
 			CoreConnect();
 			try
 			{
-				while (!runningProcess!.HasExited)
+				while (!_runningProcess!.HasExited)
 				{
-					///Debug.WriteLine($"*** ConsoleCore Waitning...");
-					runningProcess.WaitForExit(1000);
+					_logger.Value.Debug($"*** CoreThreadProc Waiting for finish {SDeleteBinary}...");
+					_runningProcess.WaitForExit(1000);
 					Thread.Sleep(1000);
 				}
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"*** Console ERROR! '{SDeleteBinary}' {ex.Message}.");
+				Debug.WriteLine($"*** CoreThreadProc ERROR! '{SDeleteBinary}' {ex.Message}.");
 				_logger.Value.Error($"CoreThreadProc", ex);
 			}
 			finally
 			{
-				Debug.WriteLine($"*** FinishedConsole '{SDeleteBinary}'.");
-				_logger.Value.Debug($"CoreThreadProc finally");
+				//_mtxLock?.ReleaseMutex();
+				_mtxLock?.Dispose();
+				_mtxLock = null;
+
+				string s = $"*** CoreThreadProc Finished '{SDeleteBinary}'.";
+				Debug.WriteLine(s);
+				_logger.Value.Debug(s);
 
 				_evtCleanFinished.Set();
 				CoreDisConnect();
-				OnFinished();
+
+				_runningProcess = null;
+				_thCore = null;
+				Finished!.Invoke(this, EventArgs.Empty);
 			}
 		}
 
-		private void OnFinished()
-		{
-			runningProcess = null;
-			Finished!.Invoke(this, EventArgs.Empty);
-			_thCore = null;
-		}
 
 		public void Stop()
 		{
-			_logger.Value.Debug($"CoreThreadProc Need Stop");
-			if (runningProcess == null) return; //; throw new Exception("Still not started!");
+			_logger.Value.Debug($"Core Need Stop!");
+			if (_runningProcess == null) return; //; throw new Exception("Still not started!");
 
-			if (!runningProcess!.HasExited)
+			if (!_runningProcess!.HasExited)
 			{
-				runningProcess.Kill();
+				_runningProcess.Kill();
 				_evtCleanFinished.WaitOne();
 			}
-			_logger.Value.Debug($"CoreThreadProc Stopped");
+			_logger.Value.Debug($"Core Stopped");
 		}
 	}
 }

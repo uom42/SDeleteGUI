@@ -33,8 +33,7 @@ namespace SDeleteGUI
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
 			this.tlpParams = new System.Windows.Forms.TableLayoutPanel();
-			this.lblSDeleteBinPathTitle = new System.Windows.Forms.LinkLabel();
-			this.lblSDeleteBinPath = new System.Windows.Forms.Label();
+			this.lblSDeleteBinPath = new System.Windows.Forms.LinkLabel();
 			this.optSource_Dir = new System.Windows.Forms.RadioButton();
 			this.optSource_Files = new System.Windows.Forms.RadioButton();
 			this.txtSource_Dir = new System.Windows.Forms.TextBox();
@@ -79,28 +78,26 @@ namespace SDeleteGUI
 			this.tlpParams.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this.tlpParams.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tlpParams.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-			this.tlpParams.Controls.Add(this.lblSDeleteBinPathTitle, 0, 0);
-			this.tlpParams.Controls.Add(this.lblSDeleteBinPath, 1, 1);
-			this.tlpParams.Controls.Add(this.optSource_Dir, 1, 6);
-			this.tlpParams.Controls.Add(this.optSource_Files, 1, 7);
-			this.tlpParams.Controls.Add(this.txtSource_Dir, 2, 6);
-			this.tlpParams.Controls.Add(this.txtSource_Files, 2, 7);
-			this.tlpParams.Controls.Add(this.lblWhatToClean, 0, 3);
-			this.tlpParams.Controls.Add(this.btnSource_DisplaySelectionUI, 3, 6);
-			this.tlpParams.Controls.Add(this.panel1, 0, 8);
-			this.tlpParams.Controls.Add(this.pnlSeparetor1, 0, 2);
-			this.tlpParams.Controls.Add(this.optSource_PhyDisk, 1, 4);
-			this.tlpParams.Controls.Add(this.cboSource_PhyDisk, 2, 4);
-			this.tlpParams.Controls.Add(this.optSource_LogDisk, 1, 5);
-			this.tlpParams.Controls.Add(this.cboSource_LogDisk, 2, 5);
-			this.tlpParams.Controls.Add(this.btnSource_Refresh, 3, 4);
-			this.tlpParams.Controls.Add(this.tlpSection2, 0, 9);
-			this.tlpParams.Controls.Add(this.tlpCleanModes, 2, 9);
+			this.tlpParams.Controls.Add(this.lblSDeleteBinPath, 0, 0);
+			this.tlpParams.Controls.Add(this.optSource_Dir, 1, 5);
+			this.tlpParams.Controls.Add(this.optSource_Files, 1, 6);
+			this.tlpParams.Controls.Add(this.txtSource_Dir, 2, 5);
+			this.tlpParams.Controls.Add(this.txtSource_Files, 2, 6);
+			this.tlpParams.Controls.Add(this.lblWhatToClean, 0, 2);
+			this.tlpParams.Controls.Add(this.btnSource_DisplaySelectionUI, 3, 5);
+			this.tlpParams.Controls.Add(this.panel1, 0, 7);
+			this.tlpParams.Controls.Add(this.pnlSeparetor1, 0, 1);
+			this.tlpParams.Controls.Add(this.optSource_PhyDisk, 1, 3);
+			this.tlpParams.Controls.Add(this.cboSource_PhyDisk, 2, 3);
+			this.tlpParams.Controls.Add(this.optSource_LogDisk, 1, 4);
+			this.tlpParams.Controls.Add(this.cboSource_LogDisk, 2, 4);
+			this.tlpParams.Controls.Add(this.btnSource_Refresh, 3, 3);
+			this.tlpParams.Controls.Add(this.tlpSection2, 0, 8);
+			this.tlpParams.Controls.Add(this.tlpCleanModes, 2, 8);
 			this.tlpParams.Dock = System.Windows.Forms.DockStyle.Top;
 			this.tlpParams.Location = new System.Drawing.Point(16, 16);
 			this.tlpParams.Name = "tlpParams";
-			this.tlpParams.RowCount = 10;
-			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tlpParams.RowCount = 9;
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -111,40 +108,29 @@ namespace SDeleteGUI
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tlpParams.Size = new System.Drawing.Size(796, 266);
+			this.tlpParams.Size = new System.Drawing.Size(796, 243);
 			this.tlpParams.TabIndex = 0;
-			// 
-			// lblSDeleteBinPathTitle
-			// 
-			this.lblSDeleteBinPathTitle.AutoSize = true;
-			this.tlpParams.SetColumnSpan(this.lblSDeleteBinPathTitle, 3);
-			this.lblSDeleteBinPathTitle.Dock = System.Windows.Forms.DockStyle.Top;
-			this.lblSDeleteBinPathTitle.LinkArea = new System.Windows.Forms.LinkArea(0, 7);
-			this.lblSDeleteBinPathTitle.Location = new System.Drawing.Point(3, 0);
-			this.lblSDeleteBinPathTitle.Name = "lblSDeleteBinPathTitle";
-			this.lblSDeleteBinPathTitle.Size = new System.Drawing.Size(760, 21);
-			this.lblSDeleteBinPathTitle.TabIndex = 0;
-			this.lblSDeleteBinPathTitle.TabStop = true;
-			this.lblSDeleteBinPathTitle.Text = "SDelete binary location:";
-			this.lblSDeleteBinPathTitle.UseCompatibleTextRendering = true;
 			// 
 			// lblSDeleteBinPath
 			// 
-			this.tlpParams.SetColumnSpan(this.lblSDeleteBinPath, 2);
+			this.lblSDeleteBinPath.AutoSize = true;
+			this.tlpParams.SetColumnSpan(this.lblSDeleteBinPath, 3);
 			this.lblSDeleteBinPath.Dock = System.Windows.Forms.DockStyle.Top;
-			this.lblSDeleteBinPath.Location = new System.Drawing.Point(23, 21);
+			this.lblSDeleteBinPath.LinkArea = new System.Windows.Forms.LinkArea(0, 7);
+			this.lblSDeleteBinPath.Location = new System.Drawing.Point(3, 0);
 			this.lblSDeleteBinPath.Name = "lblSDeleteBinPath";
-			this.lblSDeleteBinPath.Size = new System.Drawing.Size(740, 23);
-			this.lblSDeleteBinPath.TabIndex = 1;
+			this.lblSDeleteBinPath.Size = new System.Drawing.Size(760, 21);
+			this.lblSDeleteBinPath.TabIndex = 0;
+			this.lblSDeleteBinPath.TabStop = true;
+			this.lblSDeleteBinPath.Text = "SDelete binary location:";
+			this.lblSDeleteBinPath.UseCompatibleTextRendering = true;
 			// 
 			// optSource_Dir
 			// 
 			this.optSource_Dir.AutoSize = true;
 			this.optSource_Dir.Checked = true;
 			this.optSource_Dir.Dock = System.Windows.Forms.DockStyle.Left;
-			this.optSource_Dir.Location = new System.Drawing.Point(23, 130);
+			this.optSource_Dir.Location = new System.Drawing.Point(23, 107);
 			this.optSource_Dir.Name = "optSource_Dir";
 			this.optSource_Dir.Size = new System.Drawing.Size(163, 23);
 			this.optSource_Dir.TabIndex = 6;
@@ -156,7 +142,7 @@ namespace SDeleteGUI
 			// 
 			this.optSource_Files.AutoSize = true;
 			this.optSource_Files.Dock = System.Windows.Forms.DockStyle.Left;
-			this.optSource_Files.Location = new System.Drawing.Point(23, 159);
+			this.optSource_Files.Location = new System.Drawing.Point(23, 136);
 			this.optSource_Files.Name = "optSource_Files";
 			this.optSource_Files.Size = new System.Drawing.Size(56, 23);
 			this.optSource_Files.TabIndex = 8;
@@ -168,7 +154,7 @@ namespace SDeleteGUI
 			this.txtSource_Dir.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
 			this.txtSource_Dir.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystemDirectories;
 			this.txtSource_Dir.Dock = System.Windows.Forms.DockStyle.Top;
-			this.txtSource_Dir.Location = new System.Drawing.Point(249, 130);
+			this.txtSource_Dir.Location = new System.Drawing.Point(249, 107);
 			this.txtSource_Dir.Name = "txtSource_Dir";
 			this.txtSource_Dir.Size = new System.Drawing.Size(514, 23);
 			this.txtSource_Dir.TabIndex = 7;
@@ -178,7 +164,7 @@ namespace SDeleteGUI
 			this.txtSource_Files.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
 			this.txtSource_Files.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystem;
 			this.txtSource_Files.Dock = System.Windows.Forms.DockStyle.Top;
-			this.txtSource_Files.Location = new System.Drawing.Point(249, 159);
+			this.txtSource_Files.Location = new System.Drawing.Point(249, 136);
 			this.txtSource_Files.Name = "txtSource_Files";
 			this.txtSource_Files.ReadOnly = true;
 			this.txtSource_Files.Size = new System.Drawing.Size(514, 23);
@@ -189,7 +175,7 @@ namespace SDeleteGUI
 			this.lblWhatToClean.AutoSize = true;
 			this.tlpParams.SetColumnSpan(this.lblWhatToClean, 4);
 			this.lblWhatToClean.Dock = System.Windows.Forms.DockStyle.Top;
-			this.lblWhatToClean.Location = new System.Drawing.Point(3, 54);
+			this.lblWhatToClean.Location = new System.Drawing.Point(3, 31);
 			this.lblWhatToClean.Name = "lblWhatToClean";
 			this.lblWhatToClean.Size = new System.Drawing.Size(790, 15);
 			this.lblWhatToClean.TabIndex = 6;
@@ -198,7 +184,7 @@ namespace SDeleteGUI
 			// btnSource_DisplaySelectionUI
 			// 
 			this.btnSource_DisplaySelectionUI.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.btnSource_DisplaySelectionUI.Location = new System.Drawing.Point(769, 130);
+			this.btnSource_DisplaySelectionUI.Location = new System.Drawing.Point(769, 107);
 			this.btnSource_DisplaySelectionUI.Name = "btnSource_DisplaySelectionUI";
 			this.tlpParams.SetRowSpan(this.btnSource_DisplaySelectionUI, 2);
 			this.btnSource_DisplaySelectionUI.Size = new System.Drawing.Size(24, 52);
@@ -211,7 +197,7 @@ namespace SDeleteGUI
 			this.panel1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
 			this.tlpParams.SetColumnSpan(this.panel1, 4);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
-			this.panel1.Location = new System.Drawing.Point(3, 188);
+			this.panel1.Location = new System.Drawing.Point(3, 165);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(790, 4);
 			this.panel1.TabIndex = 8;
@@ -221,7 +207,7 @@ namespace SDeleteGUI
 			this.pnlSeparetor1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
 			this.tlpParams.SetColumnSpan(this.pnlSeparetor1, 4);
 			this.pnlSeparetor1.Dock = System.Windows.Forms.DockStyle.Top;
-			this.pnlSeparetor1.Location = new System.Drawing.Point(3, 47);
+			this.pnlSeparetor1.Location = new System.Drawing.Point(3, 24);
 			this.pnlSeparetor1.Name = "pnlSeparetor1";
 			this.pnlSeparetor1.Size = new System.Drawing.Size(790, 4);
 			this.pnlSeparetor1.TabIndex = 9;
@@ -230,7 +216,7 @@ namespace SDeleteGUI
 			// 
 			this.optSource_PhyDisk.AutoSize = true;
 			this.optSource_PhyDisk.Dock = System.Windows.Forms.DockStyle.Left;
-			this.optSource_PhyDisk.Location = new System.Drawing.Point(23, 72);
+			this.optSource_PhyDisk.Location = new System.Drawing.Point(23, 49);
 			this.optSource_PhyDisk.Name = "optSource_PhyDisk";
 			this.optSource_PhyDisk.Size = new System.Drawing.Size(220, 23);
 			this.optSource_PhyDisk.TabIndex = 1;
@@ -243,7 +229,7 @@ namespace SDeleteGUI
 			this.cboSource_PhyDisk.Dock = System.Windows.Forms.DockStyle.Top;
 			this.cboSource_PhyDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboSource_PhyDisk.FormattingEnabled = true;
-			this.cboSource_PhyDisk.Location = new System.Drawing.Point(249, 72);
+			this.cboSource_PhyDisk.Location = new System.Drawing.Point(249, 49);
 			this.cboSource_PhyDisk.Name = "cboSource_PhyDisk";
 			this.cboSource_PhyDisk.Size = new System.Drawing.Size(514, 23);
 			this.cboSource_PhyDisk.TabIndex = 2;
@@ -252,7 +238,7 @@ namespace SDeleteGUI
 			// 
 			this.optSource_LogDisk.AutoSize = true;
 			this.optSource_LogDisk.Dock = System.Windows.Forms.DockStyle.Left;
-			this.optSource_LogDisk.Location = new System.Drawing.Point(23, 101);
+			this.optSource_LogDisk.Location = new System.Drawing.Point(23, 78);
 			this.optSource_LogDisk.Name = "optSource_LogDisk";
 			this.optSource_LogDisk.Size = new System.Drawing.Size(190, 23);
 			this.optSource_LogDisk.TabIndex = 3;
@@ -265,7 +251,7 @@ namespace SDeleteGUI
 			this.cboSource_LogDisk.Dock = System.Windows.Forms.DockStyle.Top;
 			this.cboSource_LogDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboSource_LogDisk.FormattingEnabled = true;
-			this.cboSource_LogDisk.Location = new System.Drawing.Point(249, 101);
+			this.cboSource_LogDisk.Location = new System.Drawing.Point(249, 78);
 			this.cboSource_LogDisk.Name = "cboSource_LogDisk";
 			this.cboSource_LogDisk.Size = new System.Drawing.Size(514, 23);
 			this.cboSource_LogDisk.TabIndex = 4;
@@ -274,7 +260,7 @@ namespace SDeleteGUI
 			// 
 			this.btnSource_Refresh.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.btnSource_Refresh.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			this.btnSource_Refresh.Location = new System.Drawing.Point(769, 72);
+			this.btnSource_Refresh.Location = new System.Drawing.Point(769, 49);
 			this.btnSource_Refresh.Name = "btnSource_Refresh";
 			this.tlpParams.SetRowSpan(this.btnSource_Refresh, 2);
 			this.btnSource_Refresh.Size = new System.Drawing.Size(24, 52);
@@ -295,7 +281,7 @@ namespace SDeleteGUI
 			this.tlpSection2.Controls.Add(this.pnlSeparator2, 0, 0);
 			this.tlpSection2.Controls.Add(this.numPasses, 1, 0);
 			this.tlpSection2.Dock = System.Windows.Forms.DockStyle.Top;
-			this.tlpSection2.Location = new System.Drawing.Point(3, 198);
+			this.tlpSection2.Location = new System.Drawing.Point(3, 175);
 			this.tlpSection2.Name = "tlpSection2";
 			this.tlpSection2.RowCount = 1;
 			this.tlpSection2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -319,23 +305,23 @@ namespace SDeleteGUI
 			this.numPasses.Dock = System.Windows.Forms.DockStyle.Top;
 			this.numPasses.Location = new System.Drawing.Point(107, 3);
 			this.numPasses.Maximum = new decimal(new int[] {
-			10,
-			0,
-			0,
-			0});
+            10,
+            0,
+            0,
+            0});
 			this.numPasses.Minimum = new decimal(new int[] {
-			1,
-			0,
-			0,
-			0});
+            1,
+            0,
+            0,
+            0});
 			this.numPasses.Name = "numPasses";
 			this.numPasses.Size = new System.Drawing.Size(130, 23);
 			this.numPasses.TabIndex = 11;
 			this.numPasses.Value = new decimal(new int[] {
-			1,
-			0,
-			0,
-			0});
+            1,
+            0,
+            0,
+            0});
 			// 
 			// tlpCleanModes
 			// 
@@ -349,7 +335,7 @@ namespace SDeleteGUI
 			this.tlpCleanModes.Controls.Add(this.optCleanMode_Clean, 1, 1);
 			this.tlpCleanModes.Controls.Add(this.label4, 0, 0);
 			this.tlpCleanModes.Dock = System.Windows.Forms.DockStyle.Top;
-			this.tlpCleanModes.Location = new System.Drawing.Point(249, 198);
+			this.tlpCleanModes.Location = new System.Drawing.Point(249, 175);
 			this.tlpCleanModes.Name = "tlpCleanModes";
 			this.tlpCleanModes.RowCount = 3;
 			this.tlpCleanModes.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -405,17 +391,18 @@ namespace SDeleteGUI
 			// 
 			this.tlpDown.SetColumnSpan(this.lstLog, 2);
 			this.lstLog.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.lstLog.IntegralHeight = false;
 			this.lstLog.ItemHeight = 15;
 			this.lstLog.Location = new System.Drawing.Point(3, 28);
 			this.lstLog.Name = "lstLog";
-			this.lstLog.Size = new System.Drawing.Size(790, 206);
+			this.lstLog.Size = new System.Drawing.Size(790, 229);
 			this.lstLog.TabIndex = 0;
 			// 
 			// pbProgress
 			// 
 			this.tlpDown.SetColumnSpan(this.pbProgress, 2);
 			this.pbProgress.Dock = System.Windows.Forms.DockStyle.Top;
-			this.pbProgress.Location = new System.Drawing.Point(3, 248);
+			this.pbProgress.Location = new System.Drawing.Point(3, 271);
 			this.pbProgress.Name = "pbProgress";
 			this.pbProgress.Size = new System.Drawing.Size(790, 8);
 			this.pbProgress.TabIndex = 25;
@@ -423,7 +410,7 @@ namespace SDeleteGUI
 			// btnStartStop
 			// 
 			this.btnStartStop.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.btnStartStop.Location = new System.Drawing.Point(671, 264);
+			this.btnStartStop.Location = new System.Drawing.Point(671, 287);
 			this.btnStartStop.Name = "btnStartStop";
 			this.btnStartStop.Size = new System.Drawing.Size(122, 34);
 			this.btnStartStop.TabIndex = 1;
@@ -442,7 +429,7 @@ namespace SDeleteGUI
 			this.tlpDown.Controls.Add(this.label1, 0, 1);
 			this.tlpDown.Controls.Add(this.pnlSeparator3, 0, 0);
 			this.tlpDown.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.tlpDown.Location = new System.Drawing.Point(16, 282);
+			this.tlpDown.Location = new System.Drawing.Point(16, 259);
 			this.tlpDown.Name = "tlpDown";
 			this.tlpDown.RowCount = 6;
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -451,14 +438,14 @@ namespace SDeleteGUI
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 8F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-			this.tlpDown.Size = new System.Drawing.Size(796, 301);
+			this.tlpDown.Size = new System.Drawing.Size(796, 324);
 			this.tlpDown.TabIndex = 1;
 			// 
 			// lblStatus
 			// 
 			this.lblStatus.AutoSize = true;
 			this.lblStatus.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.lblStatus.Location = new System.Drawing.Point(3, 261);
+			this.lblStatus.Location = new System.Drawing.Point(3, 284);
 			this.lblStatus.Name = "lblStatus";
 			this.lblStatus.Size = new System.Drawing.Size(662, 40);
 			this.lblStatus.TabIndex = 26;
@@ -507,8 +494,7 @@ namespace SDeleteGUI
 		#endregion
 
 		private System.Windows.Forms.TableLayoutPanel tlpParams;
-		private LinkLabel lblSDeleteBinPathTitle;
-		private Label lblSDeleteBinPath;
+		private LinkLabel lblSDeleteBinPath;
 		private System.Windows.Forms.RadioButton optSource_Dir;
 		private System.Windows.Forms.RadioButton optSource_Files;
 		private System.Windows.Forms.TextBox txtSource_Dir;

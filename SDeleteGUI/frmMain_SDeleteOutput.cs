@@ -1,11 +1,5 @@
 ﻿
-using System.Text.RegularExpressions;
-
-using Microsoft.WindowsAPICodePack.Taskbar;
-
 using SDeleteGUI.Core.SDelete;
-
-using static SDeleteGUI.Core.SDelete.SDeleteManager;
 
 namespace SDeleteGUI
 {
