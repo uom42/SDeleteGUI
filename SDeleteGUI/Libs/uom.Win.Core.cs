@@ -3584,7 +3584,8 @@ namespace uom
 			public static void e_SetValue<T>(this RegistryKey hRegKey,
 									   string name,
 									   T value,
-									   bool DeleteRegistryRecordIfNullValueValue = true)
+									   bool DeleteRegistryRecordIfNullValueValue = true,
+									   RegistryValueKind? kind = null)
 			{
 				if (DeleteRegistryRecordIfNullValueValue && (null == value))
 				{
@@ -3592,21 +3593,30 @@ namespace uom
 					return;
 				}
 
-				switch (value)
+				if (null == kind)
 				{
-					case string s: hRegKey.SetValue(name, s, RegistryValueKind.String); break;
-					case string[] ss: hRegKey.SetValue(name, ss, RegistryValueKind.MultiString); break;
-					case Int32 i32: hRegKey.SetValue(name, i32, RegistryValueKind.DWord); break;
-					case Int64 i64: hRegKey.SetValue(name, i64, RegistryValueKind.QWord); break;
-					case bool b: hRegKey.SetValue(name, (b ? 1 : 0), RegistryValueKind.DWord); break;
-					case Enum e: hRegKey.SetValue(name, e, RegistryValueKind.DWord); break;
-					case byte[] data: hRegKey.SetValue(name, data, RegistryValueKind.Binary); break;
+					//Detect kind by value type
+					switch (value)
+					{
+						case string s: hRegKey.SetValue(name, s, RegistryValueKind.String); break;
+						case string[] ss: hRegKey.SetValue(name, ss, RegistryValueKind.MultiString); break;
+						case Int32 i32: hRegKey.SetValue(name, i32, RegistryValueKind.DWord); break;
+						case Int64 i64: hRegKey.SetValue(name, i64, RegistryValueKind.QWord); break;
+						case bool b: hRegKey.SetValue(name, (b ? 1 : 0), RegistryValueKind.DWord); break;
+						case Enum e: hRegKey.SetValue(name, e, RegistryValueKind.DWord); break;
+						case byte[] data: hRegKey.SetValue(name, data, RegistryValueKind.Binary); break;
 
-					default: throw new ArgumentOutOfRangeException($"Unknown type of '{nameof(value)}' = '{typeof(T)}'");
+						default: throw new ArgumentOutOfRangeException($"Unknown type of '{nameof(value)}' = '{typeof(T)}'");
+					}
+				}
+				else
+				{
+					hRegKey.SetValue(name, value, kind!.Value);
 				}
 				//RegistryValueKind RegType = RegistryValueKind.DWord,
 				//hRegKey.SetValue(ValueName, ObjValue, RegType); //Record Value
 			}
+
 
 			[DebuggerNonUserCode, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static void e_SaveSettings<T>(this T val, string name, bool deleteRegistryRecordIfNullValueValue = true)
@@ -36239,6 +36249,6 @@ namespace uom
 
 
 	}
-
 	#endregion
+
 }
