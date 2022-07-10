@@ -19,6 +19,7 @@ namespace SDeleteGUI
 
 			_tbm.Value.SetProgressState(TaskbarProgressBarState.Indeterminate);
 		}
+
 		private void ProgressBarSetState_Progress(float progress)
 		{
 			int iProgress = (int)progress;
@@ -30,6 +31,7 @@ namespace SDeleteGUI
 			_tbm.Value.SetProgressState(TaskbarProgressBarState.Normal);
 			_tbm.Value.SetProgressValue(iProgress, 100);
 		}
+
 		private void ProgressBarSetState_Error()
 		{
 			pbProgress.Style = ProgressBarStyle.Blocks;
@@ -37,6 +39,7 @@ namespace SDeleteGUI
 			pbProgress.e_SetState(Extensions_Controls_ProgressBar.PBM_STATES.PBST_ERROR);
 			_tbm.Value.SetProgressState(TaskbarProgressBarState.Error);
 		}
+
 		private void ProgressBarSetState_Finished()
 		{
 			pbProgress.Style = ProgressBarStyle.Blocks;

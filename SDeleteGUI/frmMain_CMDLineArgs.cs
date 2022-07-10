@@ -8,16 +8,13 @@ namespace SDeleteGUI
 	internal partial class frmMain : Form
 	{
 
-
-
-		//private static void ShellRegisterAsync(bool regisster) => new Task(() => ShellRegister(regisster), TaskCreationOptions.LongRunning).Start();
-		const string C_SHELL_CONTEXTMENU_MENU_ARG_CLEAN_DIR = "dir";
+		private const string C_SHELL_CONTEXTMENU_MENU_ARG_CLEAN_DIR = "dir";
+		private const string C_SHELL_CONTEXTMENU_MENU_TITLE_PREFIX = "¤ ";
+		private const string C_SHELL_CONTEXTMENU_MENU_TITLE = C_SHELL_CONTEXTMENU_MENU_TITLE_PREFIX + "Clean";
+		private const string C_SHELL_CONTEXTMENU_MENU_REGVALUE = "UOM_Clean";
 
 		private void ShellRegister(bool regisster)
 		{
-			const string C_SHELL_CONTEXTMENU_MENU_TITLE_PREFIX = "¤ ";
-			const string C_SHELL_CONTEXTMENU_MENU_TITLE = C_SHELL_CONTEXTMENU_MENU_TITLE_PREFIX + "Clean";
-			const string C_SHELL_CONTEXTMENU_MENU_REGVALUE = "UOM_Clean";
 
 			_logger.Value.Debug($"ShellRegister({regisster})");
 			if (regisster)
@@ -27,18 +24,14 @@ namespace SDeleteGUI
 					null,
 					C_SHELL_CONTEXTMENU_MENU_ARG_CLEAN_DIR);
 
-				if (AlreadyRegistered)
-				{
-					_logger.Value.Debug($"ShellRegister - Already registered OK.");
-					return; //Already registered
-				}
+				_logger.Value.Debug($"ShellRegister - AlreadyRegistered = {AlreadyRegistered}");
+				if (AlreadyRegistered) return;
 
 				DialogResult dr = "Register in shell context menu for folders clean up?".e_MsgboxAskWithCheckbox("DoNotAskContextMenuShellRegistration");
 				_logger.Value.Debug($"MsgboxAskWithCheckbox() = {dr}");
-
 				if (dr != DialogResult.Yes) return;
 
-				_logger.Value.Debug($"ShellRegister - Still Unregistered! Calling ContextMenu_RegisterForDirectory()...");
+				_logger.Value.Debug($"ShellRegister - Calling ContextMenu_RegisterForDirectory()...");
 				uom.OS.Shell.ContextMenu_RegisterForDirectory(
 					C_SHELL_CONTEXTMENU_MENU_REGVALUE,
 					C_SHELL_CONTEXTMENU_MENU_TITLE,

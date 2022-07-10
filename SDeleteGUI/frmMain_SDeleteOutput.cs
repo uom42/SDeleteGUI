@@ -15,6 +15,7 @@ namespace SDeleteGUI
 			_sdmgr!.Error += OnCore_Error;
 			_sdmgr!.Finished += (_, _) => this.e_runInUIThread(() => OnFinished());
 		}
+
 		private void SDeleteEngine_DetachEvents()
 		{
 			_sdmgr!.OutputRAW -= OnCore_Data_RAW;
@@ -25,22 +26,24 @@ namespace SDeleteGUI
 
 
 		private void OnCore_Data_RAW(object sender, DataReceivedEventArgs e)
+			=> LogAddRowMTSafe(e?.Data, false);
+
+		private void OnCore_Error(object sender, DataReceivedEventArgs e)
+			=> LogAddRowMTSafe(e?.Data, true);
+
+		private void OnCore_Data_Progress(object sender, ProgressInfo e) => this.e_runInUIThread(() => OnCore_Data_Progress(e));
+
+		private void OnCore_Data_Progress(ProgressInfo e) => ProgressBarSetState_Progress(e.ProgressPercent);
+
+
+		private void LogAddRowMTSafe(string? s, bool isError = false)
 		{
+			if (s.e_IsNullOrEmpty()) return;//Skip empty lines
 
-			if (e.Data == null) return;
-			string s = (e.Data ?? string.Empty).Trim();
-			if (s.e_IsNullOrEmpty()) return;
-
-			Debug.WriteLine($"Output Data: '{s}'");
-			LogAddRowMTSafe(s);
-		}
-
-
-		private void LogAddRowMTSafe(string s)
-		{
-			//lstLog.e_runInUIThread_AppendLine(s, 1000);
 			const int C_MAX_LOG_ROWS = 1000;
 
+			if (isError) s = "!ERROR STREAM!: " + s;
+			Debug.WriteLine($"Output Data: '{s}'");
 
 			Action addRowInUIThread = new(() =>
 			{
@@ -50,9 +53,10 @@ namespace SDeleteGUI
 					//Limit count of lines to limit
 					while (lstLog.Items.Count >= C_MAX_LOG_ROWS) lstLog.Items.RemoveAt(0);
 
-					if (lstLog.Items.Count > 0)
+					if (!isError && lstLog.Items.Count > 0)
 					{
-						//Будем искать частичное совпадение с предыдущей строкой, если оно будет - то сделаем в предыдущей строке замену текста
+						//We will search for string equality with previous log line
+						//and if we found - we just replace text in last report line
 						const int MIN_EQUAL_CHARS = 3;
 						const int MIN_EQUAL_WORDS = 2;
 
@@ -73,6 +77,9 @@ namespace SDeleteGUI
 							}
 						}
 					}
+
+					//No found equality or this is error.
+					//Just add new row to log
 					lstLog.Items.Add(s);
 					if (lstLog.Items.Count > 1) lstLog.SelectedIndex = (lstLog.Items.Count - 1);
 				}
@@ -81,27 +88,5 @@ namespace SDeleteGUI
 
 			this.e_runInUIThread(addRowInUIThread);
 		}
-
-		private void OnCore_Data_Progress(object sender, ProgressInfo e)
-			=> this.e_runInUIThread(() => OnCore_Data_Progress(e));
-
-		private void OnCore_Data_Progress(ProgressInfo e)
-		{
-			//Debug.WriteLine("Progress data detected! " + e.ToString());
-			ProgressBarSetState_Progress(e.ProgressPercent);
-		}
-
-
-		private void OnCore_Error(object sender, DataReceivedEventArgs e)
-		{
-			if (e.Data == null) return;
-			string s = e.Data ?? string.Empty;
-			if (s.e_IsNullOrEmpty()) return;
-
-			Debug.WriteLine($"Error Data: '{s}'");
-			//lstLog.e_runInUIThread_AppendLine("ERROR!: " + (s), 1000);
-			LogAddRowMTSafe("ERROR!: " + (s));
-		}
-
 	}
 }
