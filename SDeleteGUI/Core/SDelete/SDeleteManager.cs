@@ -1,10 +1,6 @@
 ﻿#nullable enable
 
 
-using System.Runtime.InteropServices;
-
-using NLog;
-
 using uom;
 
 
@@ -58,66 +54,6 @@ namespace SDeleteGUI.Core.SDelete
 		public readonly FileInfo SDeleteBinary;
 
 		public event EventHandler Finished = delegate { };
-
-
-		internal class DataReceivedEventArgsEx : System.EventArgs
-		{
-			public DateTime Timestamp { get; private set; } = DateTime.Now;
-
-			public readonly string Data = string.Empty;
-
-			public readonly ProgressInfoEventArgs? ProgressInfo = null;
-
-			private string estimated = string.Empty;
-
-
-			public DataReceivedEventArgsEx(string data) : base()
-			{
-				this.Data = data;
-				if (ProgressInfoEventArgs.IsMatch(Data)) ProgressInfo = new(Data);
-			}
-			public DataReceivedEventArgsEx(DataReceivedEventArgs e) : this(e.Data) { }
-
-			public void UpdateTimestamp(DateTime newTimestamp)
-			{
-				Timestamp = newTimestamp;
-				RecalculateEstimation();
-			}
-
-			private const double ESTIMATION_MIN_PERCENT = 2d;
-			private const double ESTIMATION_MIN_SECONDS_SPENT = 5d;
-
-			private void RecalculateEstimation()
-			{
-				estimated = string.Empty;
-
-				if (ProgressInfo == null) return;
-				double progressPercent = ProgressInfo!.ProgressPercent;
-
-				if (progressPercent < ESTIMATION_MIN_PERCENT || progressPercent >= 100d) return;
-				double timeSpent = (DateTime.Now - Timestamp).TotalSeconds;
-				if (timeSpent < ESTIMATION_MIN_SECONDS_SPENT) return;
-
-
-				double progressPercentPerSecond = ((double)ProgressInfo!.ProgressPercent) / timeSpent;
-				double progressPercentLeave = (100 - progressPercent);
-				double dblSecondsLeave = (progressPercentLeave / progressPercentPerSecond).e_Round(0);
-				if (dblSecondsLeave < 1d) return;
-
-				dblSecondsLeave *= 1000;
-
-				if (dblSecondsLeave <= (double)UInt32.MaxValue)
-				{
-					int iSecondsLeave = (int)dblSecondsLeave;
-					string sSecondsLeave = uom.WinAPI.Shell.StrFromTimeInterval(iSecondsLeave);
-					estimated = $". {Localization.Strings.L_ESTIMATED}: {sSecondsLeave}";
-				}
-			}
-
-			public override string ToString() => (ProgressInfo?.ToString() ?? Data) + estimated;
-
-		}
-
 
 		public event EventHandler<DataReceivedEventArgsEx> OutputRAW = delegate { };
 		public event DataReceivedEventHandler Error = delegate { };
@@ -176,6 +112,9 @@ namespace SDeleteGUI.Core.SDelete
 			Application.UserAppDataRegistry.e_SetValueString(C_LAST_KNOWN_SDELETE_NAME, SDeleteBinary.FullName);
 			_logger.Value.Debug($"Saving registry setting value '{C_LAST_KNOWN_SDELETE_NAME}' = '{SDeleteBinary}'");
 		}
+
+
+		public uint Passes { get; private set; }
 
 
 		/// <summary>Clean entrie Physical disk
@@ -243,6 +182,8 @@ namespace SDeleteGUI.Core.SDelete
 
 		private void StartSDeleteCore(uint passes, string SDeleteArgs, string? mutexName, string? resourceName)
 		{
+			Passes = passes;
+
 			bool isNewMutex = false;
 			Mutex? mtx = string.IsNullOrWhiteSpace(mutexName)
 				? null
@@ -253,6 +194,7 @@ namespace SDeleteGUI.Core.SDelete
 				if (null != mtx && !isNewMutex) throw new(C_RESOURCE_ALREADY_BUSY.e_Format(resourceName!));
 
 				SDeleteArgs = @$"{C_ARG_ACCEPT_LICENSE} {C_ARG_PASSES} {passes} " + SDeleteArgs;
+				//SDeleteArgs = @$"{C_ARG_PASSES} {passes} " + SDeleteArgs;
 
 				_logger.Value.Debug($"Run_Clean: StartSDeleteCore. Passes '{passes}', SDeleteArgs = '{SDeleteArgs}'");
 				_runningProcess = null;
@@ -308,7 +250,7 @@ namespace SDeleteGUI.Core.SDelete
 
 				string cli = $"{SDeleteBinary.FullName} {SDeleteArgs}";
 				cli.e_SetClipboardSafe();
-				DataReceivedEventArgsEx ea = new($"Starting: {cli}");
+				DataReceivedEventArgsEx ea = new($"{Localization.Strings.M_STARING_SDELETE} {cli}");
 				OnCore_Data(this, ea);
 			}
 			catch
@@ -337,20 +279,17 @@ namespace SDeleteGUI.Core.SDelete
 			string s = (e.Data ?? string.Empty).Trim();
 			if (string.IsNullOrWhiteSpace(s)) return;
 
-			DataReceivedEventArgsEx ea = new(e);
-			OnCore_Data(sender, ea);
+			OnCore_Data(sender, DataReceivedEventArgsEx.Parse(e));
 		}
 		private void OnCore_Data(object sender, DataReceivedEventArgsEx e)
 		{
-			_logger.Value.Debug($"OnCore_Data: '{e.Data}'");
-			//if (null == OutputRAW) Debug.WriteLine($"WARNING! Unprocessed Output Data: '{s}'");
+			_logger.Value.Debug($"OnCore_Data: '{e.RAWData}'");
 			OutputRAW.Invoke(sender, e);
 		}
 
 		private void OnCore_Error(object sender, DataReceivedEventArgs e)
 		{
 			_logger.Value.Debug($"OnCore_Error: '{e.Data}'");
-			//if (e.Data == null) return;
 			string s = (e.Data ?? string.Empty).Trim();
 			if (s.e_IsNullOrEmpty()) return;
 

@@ -12,6 +12,8 @@ using SDeleteGUI.Core.SDelete;
 using static System.Windows.Forms.LinkLabel;
 using static SDeleteGUI.Core.SDelete.SDeleteManager;
 
+using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
+
 
 namespace SDeleteGUI
 {
@@ -20,6 +22,7 @@ namespace SDeleteGUI
 
 		private static string C_LOADING_DISKS_LIST = Localization.Strings.M_LOADING_DISK_LIST;
 		private static string C_ASK_USER = string.Format(Localization.Strings.Q_MANUAL_SEARCH_SDELETE_BINARY, SDeleteManager.C_SDBIN_FILE64, SDeleteManager.C_SDBIN_FILE);
+
 
 		private enum SourceModes : int
 		{
@@ -36,9 +39,10 @@ namespace SDeleteGUI
 		private SDeleteManager? _sdmgr = null;
 		private bool _isRunning = false;
 
-		private RadioButton[] _optSources = { };
+		private RadioButton[] _optSources = [];
 
 		private Lazy<Logger> _logger = new(() => LogManager.GetCurrentClassLogger());
+
 
 		public frmMain()
 		{
@@ -50,10 +54,10 @@ namespace SDeleteGUI
 			this.Shown += (_, _) => _Shown();
 			this.FormClosing += (s, e) =>
 			{
-				_logger.Value.Debug($"FormClosing, CloseReason = {e.CloseReason}");
+				_logger.e_Debug($"FormClosing, CloseReason = {e.CloseReason}");
 				if (e.CloseReason == CloseReason.UserClosing && _isRunning)
 				{
-					string msg = Localization.Strings.Q_STOP_ACTIVE_CLEANUP;
+					string msg = Localization.Strings.Q_STOP_ACTIVE_CLEANUP.e_WrapCPP();
 					if (MessageBox.Show(msg, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
 					{
 						e.Cancel = true;
@@ -63,11 +67,9 @@ namespace SDeleteGUI
 				}
 			};
 
+			#region Source Params
 
-			_optSources = new RadioButton[] { optSource_PhyDisk, optSource_LogDisk, optSource_Dir, optSource_Files };
-
-			llSDeleteBinPath.LinkClicked += OnSDBinary_LinkClicked;
-			llShellRegister.LinkClicked += (_, _) => OnShellRegister_Click();
+			_optSources = [optSource_PhyDisk, optSource_LogDisk, optSource_Dir, optSource_Files];
 
 			optSource_PhyDisk.CheckedChanged += (_, _) => OnSourceChanged();
 			optSource_LogDisk.CheckedChanged += (_, _) => OnSourceChanged();
@@ -76,21 +78,34 @@ namespace SDeleteGUI
 
 			btnSource_Refresh.Click += async (_, _) => await OnSource_RefreshLists();
 			btnSource_DisplaySelectionUI.Click += (_, _) => OnSource_DisplaySelectionUI();
-			txtSource_Files.Click += (_, _) => OnSource_DisplaySelectionUI();
-
 
 			cboSource_PhyDisk.SelectedIndexChanged += (_, _) => UpdateUI();
+
+			txtSource_Dir.Click += (_, _) => OnSource_DisplaySelectionUI();
 			txtSource_Dir.TextChanged += (_, _) => UpdateUI();
+			txtSource_Files.Click += (_, _) => OnSource_DisplaySelectionUI();
 			txtSource_Files.TextChanged += (_, _) => UpdateUI();
 
-			btnStartStop.Click += (_, _) => OnStartStop();
+			#endregion
 
+			btnStartStop.Click += (_, _) => OnStartStop();
 			tmrElapsed.Tick += (_, _) => OnElapsedTimerTick();
+
+			mnuTools_DevMgmt.Click += (_, _) => ((Action)uom.AppTools.StartWinSysTool_MMC_devmgmt).e_tryCatchWithErrorUI();
+			mnuTools_DiskMgmt.Click += (_, _) => ((Action)uom.AppTools.StartWinSysTool_MMC_diskmgmt).e_tryCatchWithErrorUI();
+
+			llSDeleteBinPath.LinkClicked += OnSDBinary_LinkClicked;
+			llShellRegister.LinkClicked += (_, _) => OnShellRegister_Click();
 		}
+
 
 		private void LocalizeUI()
 		{
 			Text = $"{Application.ProductName} {Assembly.GetExecutingAssembly().GetName().Version}";
+			mnuTools.Text = Localization.Strings.L_MNU_TOOLS;
+			mnuTools_DevMgmt.Text = Localization.Strings.L_MNU_TOOLS_DEV_MGMT;
+			mnuTools_DiskMgmt.Text = Localization.Strings.L_MNU_TOOLS_DISK_MGMT;
+
 
 			btnSource_DisplaySelectionUI.Text = "...";
 			btnSource_Refresh.Text = "🗘";
@@ -102,31 +117,28 @@ namespace SDeleteGUI
 			optSource_Dir.Text = Localization.Strings.L_CLEAN_TARGET_FOLDER;
 			optSource_Files.Text = Localization.Strings.L_CLEAN_TARGET_FILES;
 
-			label4.Text = Localization.Strings.L_FREE_SPACE_CLEAN_METHOD;
+			lblCleanMode.Text = Localization.Strings.L_FREE_SPACE_CLEAN_METHOD;
 			optCleanMode_Clean.Text = Localization.Strings.L_FREE_SPACE_CLEAN_METHOD_CLEAN;
 			optCleanMode_Zero.Text = Localization.Strings.L_FREE_SPACE_CLEAN_METHOD_ZERO.e_Wrap();
 			lblOverwritePassCount.Text = Localization.Strings.L_OVERWRITE_PASS_COUNT;
 			btnStartStop.Text = Localization.Strings.L_START;
-			label1.Text = Localization.Strings.L_OUTPUT;
+			lblOutput.Text = Localization.Strings.L_OUTPUT;
+			chkCompactOutput.Text = Localization.Strings.L_OUTPUT_COMPACT;
 
 		}
 
 
-
-
-
-
 		private async Task _Load()
 		{
-			_logger.Value.Debug("_Load");
+			_logger.e_Debug("_Load");
 
 			FileInfo cbAskUserForBinary()
 			{
-				_logger.Value.Debug(C_ASK_USER);
+				_logger.e_Debug(C_ASK_USER);
 
 				if (!C_ASK_USER.e_MsgboxAskIsYes(false, Application.ProductName)) throw new NotImplementedException();
 
-				_logger.Value.Debug("Yes!");
+				_logger.e_Debug("Yes!");
 
 				using OpenFileDialog ofd = new()
 				{
@@ -138,7 +150,7 @@ namespace SDeleteGUI
 					Filter = $"{SDeleteManager.C_SDBIN_FILE64}|{SDeleteManager.C_SDBIN_FILE64}"
 				};
 				if (ofd.ShowDialog() != DialogResult.OK) throw new NotImplementedException();
-				_logger.Value.Debug($"OpenFileDialog.FileName = '{ofd.FileName}'");
+				_logger.e_Debug(ofd.FileName);
 				return new(ofd.FileName);
 			}
 
@@ -149,7 +161,7 @@ namespace SDeleteGUI
 			}
 			catch (Exception ex)
 			{
-				_logger.Value.Error($"_Load", ex);
+				_logger.e_Error(ex);
 
 				if (ex is not NotImplementedException)//Not user canceled error
 					ex.e_LogError(true);
@@ -170,7 +182,17 @@ namespace SDeleteGUI
 
 				optCleanMode_Clean.Checked = true;
 
+				optSource_Files.Checked = true;
+				optSource_PhyDisk.Checked = true;
 				await FillDisksList();
+
+				var lastRun = uom.AppTools.AppSettings.Get_DateTime("LastRun", DateTime.MinValue);
+				if (lastRun == DateTime.MinValue)
+				{
+					//First RUN
+					OpenSDeleteHomePage();
+				}
+				uom.AppTools.AppSettings.Save<DateTime>("LastRun", DateTime.Now);
 
 				await CheckShellRegistration(true);
 
@@ -178,7 +200,7 @@ namespace SDeleteGUI
 			}
 			catch (Exception ex)
 			{
-				_logger.Value.Error($"_Load2", ex);
+				_logger.e_Error(ex);
 				llSDeleteBinPath.Text = ex.Message;
 				return;
 			}
@@ -188,14 +210,17 @@ namespace SDeleteGUI
 
 
 		private void _Shown()
-			=> _tbm.Value.SetProgressState(TaskbarProgressBarState.NoProgress);
+		{
+			_tbm.Value.SetProgressState(TaskbarProgressBarState.NoProgress);
 
+			this.e_StartAutoupdateOnShown("https://raw.githubusercontent.com/uom42/1C_Pasta/master/UpdaterXML.xml");
+		}
 
 
 		/// <summary>Load disk list</summary>
 		private async Task FillDisksList()
 		{
-			_logger.Value.Debug($"FillDisksList");
+			_logger.e_Debug($"FillDisksList");
 
 			RadioButton? oldSource = _optSources.Where(radio => radio.Checked).FirstOrDefault();
 
@@ -312,7 +337,7 @@ namespace SDeleteGUI
 				else if (optSource_Files.Checked) _SourceMode = SourceModes.Files;
 				else throw _exSourceError;
 
-				_logger.Value.Debug($"OnSourceChanged, _SourceMode = {_SourceMode}");
+				_logger.e_Debug($"OnSourceChanged, _SourceMode = {_SourceMode}");
 
 				bool isSourceDisk = _SourceMode == SourceModes.PhyDisk || _SourceMode == SourceModes.LogDisk;
 				tlpCleanFreeSpaceMethods.Enabled = isSourceDisk;
@@ -327,12 +352,12 @@ namespace SDeleteGUI
 
 		private async Task OnSource_RefreshLists()
 		{
-			_logger.Value.Debug("OnSource_RefreshLists");
+			_logger.e_Debug();
 
 			try { await FillDisksList(); }
 			catch (Exception ex)
 			{
-				_logger.Value.Error("OnSource_RefreshLists", ex);
+				_logger.e_Error(ex);
 				ex.e_LogError(true);
 			}
 			finally { UpdateUI(); }
@@ -367,7 +392,7 @@ namespace SDeleteGUI
 
 		private void OnSource_DisplaySelectionUI()
 		{
-			_logger.Value.Debug($"OnSource_DisplaySelectionUI, _SourceMode = {_SourceMode}");
+			_logger.e_Debug($"OnSource_DisplaySelectionUI, _SourceMode = {_SourceMode}");
 
 			try
 			{
@@ -376,17 +401,14 @@ namespace SDeleteGUI
 					case SourceModes.Dir:
 						{
 							_bffUI.SelectedPath = txtSource_Dir.Text.Trim();
-							var dr = _bffUI.ShowDialog(this);
-							if (dr != DialogResult.OK) return;
-
+							if (_bffUI.ShowDialog(this) != DialogResult.OK) return;
 							txtSource_Dir.Text = _bffUI.SelectedPath;
 						}
 						break;
 
 					case SourceModes.Files:
 						{
-							var dr = _ofdUI.ShowDialog(this);
-							if (dr != DialogResult.OK) return;
+							if (_ofdUI.ShowDialog(this) != DialogResult.OK) return;
 
 							FileInfo[] files = _ofdUI
 							   .FileNames
@@ -402,20 +424,14 @@ namespace SDeleteGUI
 						throw _exSourceError;
 				}
 			}
-			catch (Exception ex)
-			{
-				ex.e_LogError(true);
-			}
-			finally
-			{
-				UpdateUI();
-			}
+			catch (Exception ex) { ex.e_LogError(true); }
+			finally { UpdateUI(); }
 		}
 
 		/// <summary>Update button state by UI selections</summary>
 		private void UpdateUI()
 		{
-			_logger.Value.Debug($"UpdateUI, _SourceMode = {_SourceMode}");
+			_logger.e_Debug($"UpdateUI, _SourceMode = {_SourceMode}");
 
 			bool bCanRun = false;
 			try
@@ -456,36 +472,33 @@ namespace SDeleteGUI
 						break;
 				}
 			}
-			catch (Exception ex)
-			{
-				_logger.Value.Error($"UpdateUI", ex);
-			}
+			catch (Exception ex) { _logger.e_Error(ex); }
 			finally { btnStartStop.Enabled = bCanRun; }
 		}
 
-		private DateTime _dtStarted = DateTime.Now;
 
 		private void OnStartStop()
 		{
-			_logger.Value.Debug($"OnStartStop, _SourceMode = {_SourceMode}, _isRunning = {_isRunning}");
+			_logger.e_Debug($"_SourceMode = {_SourceMode}, _isRunning = {_isRunning}");
 
 			if (_isRunning)
 			{
 				tmrElapsed.Stop();
-				//tmrElapsed.Enabled = false;
-
 				_sdmgr!.Stop();
 			}
 			else
 			{
 				_dtStarted = DateTime.Now;
+				_tsElapsed = DateTime.Now - _dtStarted;
+				_estimatedTimeString = string.Empty;
+
 				OnElapsedTimerTick();
 				tmrElapsed.Start();
 
 				_isRunning = true;
 				tlpParams.Enabled = false;
 				lstLog.Items.Clear();
-				btnStartStop.Text = "Stop";
+				btnStartStop.Text = Localization.Strings.L_STOP;
 
 				ProgressBarSetState_Marquee();
 
@@ -533,8 +546,7 @@ namespace SDeleteGUI
 				}
 				catch (Exception ex)
 				{
-					_logger.Value.Error($"OnStartStop", ex);
-
+					_logger.e_Error(ex);
 					ProgressBarSetState_Error();
 					ex.e_LogError(true);
 					OnFinished();
@@ -544,33 +556,47 @@ namespace SDeleteGUI
 
 		private void OnFinished()
 		{
+			_isRunning = false;
 			tmrElapsed.Stop();
-
-			_logger.Value.Debug("OnFinished");
-
+			_tsElapsed = DateTime.Now - _dtStarted;
+			_logger.e_Debug();
 			SDeleteEngine_DetachEvents();
 
-			_isRunning = false;
 			tlpParams.Enabled = true;
 			btnStartStop.Text = Localization.Strings.L_START;
 			ProgressBarSetState_Finished();
 			UpdateUI();
+			OnElapsedTimerTick();
 		}
 
-		private void OnElapsedTimerTick()
-		{
-			TimeSpan tsElapsed = DateTime.Now - _dtStarted;
-			lblStatus.Text = string.Format(Localization.Strings.L_ELAPSED, tsElapsed.e_ToShellTimeString(8));
-		}
+
+
+		#region UI Events Helpers
+
 
 		private void OnSDBinary_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			Link ll = e.Link;
 
 			if (ll.Start == 0)
-				@"https://docs.microsoft.com/en-us/sysinternals/downloads/sdelete".e_OpenURLInBrowser();
+				OpenSDeleteHomePage();
 			else
 				new Action(() => _sdmgr!.SDeleteBinary.e_OpenExplorer()).e_tryCatch();
 		}
+
+
+		private void OpenSDeleteHomePage()
+		{
+			try
+			{
+				@"https://docs.microsoft.com/en-us/sysinternals/downloads/sdelete".e_OpenURLInBrowser();
+			}
+			catch (Exception ex)
+			{
+				ex.e_LogError(true);
+			}
+		}
+
+		#endregion
 	}
 }

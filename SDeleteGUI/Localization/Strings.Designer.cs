@@ -133,7 +133,7 @@ namespace SDeleteGUI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Empty physical disk without partitions:.
+        ///   Looks up a localized string similar to Empty disk without partitions:.
         /// </summary>
         internal static string L_CLEAN_TARGET_PHY_DISK {
             get {
@@ -156,24 +156,6 @@ namespace SDeleteGUI.Localization {
         internal static string L_DONT_ASK_AGAIN {
             get {
                 return ResourceManager.GetString("L_DONT_ASK_AGAIN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} since the beginning.
-        /// </summary>
-        internal static string L_ELAPSED {
-            get {
-                return ResourceManager.GetString("L_ELAPSED", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Estimated.
-        /// </summary>
-        internal static string L_ESTIMATED {
-            get {
-                return ResourceManager.GetString("L_ESTIMATED", resourceCulture);
             }
         }
         
@@ -205,6 +187,33 @@ namespace SDeleteGUI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tools.
+        /// </summary>
+        internal static string L_MNU_TOOLS {
+            get {
+                return ResourceManager.GetString("L_MNU_TOOLS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Devices Manager.
+        /// </summary>
+        internal static string L_MNU_TOOLS_DEV_MGMT {
+            get {
+                return ResourceManager.GetString("L_MNU_TOOLS_DEV_MGMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disk Management Console.
+        /// </summary>
+        internal static string L_MNU_TOOLS_DISK_MGMT {
+            get {
+                return ResourceManager.GetString("L_MNU_TOOLS_DISK_MGMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Output:.
         /// </summary>
         internal static string L_OUTPUT {
@@ -214,20 +223,20 @@ namespace SDeleteGUI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Compact.
+        /// </summary>
+        internal static string L_OUTPUT_COMPACT {
+            get {
+                return ResourceManager.GetString("L_OUTPUT_COMPACT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Overwrite Passes:.
         /// </summary>
         internal static string L_OVERWRITE_PASS_COUNT {
             get {
                 return ResourceManager.GetString("L_OVERWRITE_PASS_COUNT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Pass {0}, progress: {1}% ({2} {3}).
-        /// </summary>
-        internal static string L_PROGRESS {
-            get {
-                return ResourceManager.GetString("L_PROGRESS", resourceCulture);
             }
         }
         
@@ -286,11 +295,128 @@ namespace SDeleteGUI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Completed at {0}.
+        /// </summary>
+        internal static string M_COMPLETED_AT {
+            get {
+                return ResourceManager.GetString("M_COMPLETED_AT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} since the beginning.
+        /// </summary>
+        internal static string M_ELAPSED {
+            get {
+                return ResourceManager.GetString("M_ELAPSED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Estimated.
+        /// </summary>
+        internal static string M_ESTIMATED {
+            get {
+                return ResourceManager.GetString("M_ESTIMATED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Loading disk list....
         /// </summary>
         internal static string M_LOADING_DISK_LIST {
             get {
                 return ResourceManager.GetString("M_LOADING_DISK_LIST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_FSO_DELETED {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_FSO_DELETED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_PASS_COUNT {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_PASS_COUNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_PHY_DISK_NO {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_PHY_DISK_NO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT_2_05 {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT_2_05", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_MFT {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_MFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_PROGRESS {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_PROGRESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_VOLUME_PURGING_MFT_FILES {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_VOLUME_PURGING_MFT_FILES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string M_OUTPUT_LOCALIZATION_VOLUME_ZEROING_PROGRESS {
+            get {
+                return ResourceManager.GetString("M_OUTPUT_LOCALIZATION_VOLUME_ZEROING_PROGRESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting:.
+        /// </summary>
+        internal static string M_STARING_SDELETE {
+            get {
+                return ResourceManager.GetString("M_STARING_SDELETE", resourceCulture);
             }
         }
         

@@ -142,19 +142,13 @@
     <value>Свободное место логического диска:</value>
   </data>
   <data name="L_CLEAN_TARGET_PHY_DISK" xml:space="preserve">
-    <value>Чистый физический диск (без разделов)</value>
+    <value>Чистый диск (без разделов)</value>
   </data>
   <data name="L_DISK_PARTITIONS" xml:space="preserve">
     <value>разделов</value>
   </data>
   <data name="L_DONT_ASK_AGAIN" xml:space="preserve">
     <value>Не спрашивать больше</value>
-  </data>
-  <data name="L_ELAPSED" xml:space="preserve">
-    <value>{0} с начала</value>
-  </data>
-  <data name="L_ESTIMATED" xml:space="preserve">
-    <value>Осталось примерно</value>
   </data>
   <data name="L_FREE_SPACE_CLEAN_METHOD" xml:space="preserve">
     <value>Способ очистки свободного пространства:</value>
@@ -165,14 +159,23 @@
   <data name="L_FREE_SPACE_CLEAN_METHOD_ZERO" xml:space="preserve">
     <value>Обнуление (оптимально для оптимизации виртуальных дисков)</value>
   </data>
+  <data name="L_MNU_TOOLS" xml:space="preserve">
+    <value>Инструменты</value>
+  </data>
+  <data name="L_MNU_TOOLS_DEV_MGMT" xml:space="preserve">
+    <value>Диспетчер устройств</value>
+  </data>
+  <data name="L_MNU_TOOLS_DISK_MGMT" xml:space="preserve">
+    <value>Управление дисками</value>
+  </data>
   <data name="L_OUTPUT" xml:space="preserve">
     <value>Вывод:</value>
   </data>
+  <data name="L_OUTPUT_COMPACT" xml:space="preserve">
+    <value>Сократить</value>
+  </data>
   <data name="L_OVERWRITE_PASS_COUNT" xml:space="preserve">
     <value>Циклов перезаписи:</value>
-  </data>
-  <data name="L_PROGRESS" xml:space="preserve">
-    <value>Проход {0}, обработано: {1}% ({2} {3})</value>
   </data>
   <data name="L_SDELETE_LOCATION" xml:space="preserve">
     <value> расположено в: </value>
@@ -192,8 +195,47 @@
   <data name="L_STOP" xml:space="preserve">
     <value>Остановить</value>
   </data>
+  <data name="M_COMPLETED_AT" xml:space="preserve">
+    <value>Завершено за {0}</value>
+  </data>
+  <data name="M_ELAPSED" xml:space="preserve">
+    <value>{0} с начала</value>
+  </data>
+  <data name="M_ESTIMATED" xml:space="preserve">
+    <value>Осталось примерно</value>
+  </data>
   <data name="M_LOADING_DISK_LIST" xml:space="preserve">
     <value>Загружается список дисков...</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_FSO_DELETED" xml:space="preserve">
+    <value>'{0}' удалено.</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PASS_COUNT" xml:space="preserve">
+    <value>Количество прходов {0}.</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PHY_DISK_NO" xml:space="preserve">
+    <value>Очистка физического диска #{0}.</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT" xml:space="preserve">
+    <value>Проход {0}, обработано: {1}% ({2} {3})</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT_2_05" xml:space="preserve">
+    <value>Проход {0} (этап {4}/{5}), обработано: {1}% ({2} {3})</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_MFT" xml:space="preserve">
+    <value>Очистка MFT {0}.</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_PROGRESS" xml:space="preserve">
+    <value>Очищаем свободное пространство на {0} {1}%</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_PURGING_MFT_FILES" xml:space="preserve">
+    <value>Очистка файлов MFT {0}% завершено.</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_ZEROING_PROGRESS" xml:space="preserve">
+    <value>Обнуляем свободное пространство на {0} {1}%</value>
+  </data>
+  <data name="M_STARING_SDELETE" xml:space="preserve">
+    <value>Запускаем:</value>
   </data>
   <data name="Q_MANUAL_SEARCH_SDELETE_BINARY" xml:space="preserve">
     <value>Sysinternals '{0}' или '{1}' не найдена по общеизвестным расположениям!

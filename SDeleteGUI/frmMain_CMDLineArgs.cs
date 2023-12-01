@@ -20,21 +20,24 @@ namespace SDeleteGUI
 			_logger.Value.Debug($"CheckShellRegistration()");
 			llShellRegister.Text = string.Empty;
 
-
 			using Task<bool> tskCheckRegistration = new(()
 				=> uom.OS.Shell.ContextMenu_IsRegisteredForDirectory(C_SHELL_CONTEXTMENU_MENU_REGVALUE,
 					   C_SHELL_CONTEXTMENU_MENU_TITLE,
 					   null,
 					   C_SHELL_CONTEXTMENU_MENU_ARG_CLEAN_DIR), TaskCreationOptions.LongRunning);
 
-			tskCheckRegistration.Start();
-			_isShellRegistered = await tskCheckRegistration;
+			_isShellRegistered = await tskCheckRegistration.e_StartAndWaitAsync();
+
 
 			llShellRegister.Text = _isShellRegistered
 				? Localization.Strings.L_SHELL_MENU_UNREGISTER
 						: Localization.Strings.L_SHELL_MENU_REGISTER;
 
 			if (!isFirstRun || _isShellRegistered) return;
+
+#if DEBUG
+			return;
+#endif
 
 			DialogResult dr = Localization.Strings.Q_REGISTER_SHELL_MENU.e_MsgboxWithCheckboxAsk(C_DIALOGID_DO_NOT_ASK_SHELL_CONTEXT_MENU_REGISTRATION, checkBoxText: Localization.Strings.L_DONT_ASK_AGAIN);
 			_logger.Value.Debug($"MsgboxAskWithCheckbox() = {dr}");

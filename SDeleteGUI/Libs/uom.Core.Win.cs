@@ -14,6 +14,7 @@ using System.Security.Permissions;
 using static uom.MessageBoxWithCheckbox.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
+using System.Runtime.Remoting;
 
 
 #if NET5_0_OR_GREATER || NET6_0_OR_GREATER || NETCOREAPP3_0_OR_GREATER
@@ -220,11 +221,27 @@ namespace uom
 				keySetting?.Flush();
 			}
 
-			internal static T? Get_T<T>(
+			internal static DateTime Get_DateTime(
 				string name,
-				T? defaultValue = default,
+				DateTime defaultValue,
 				bool searchAllVersions = true,
 				Version? searchVersionBelowOrEqual = null)
+			{
+				long dtBinary = uom.AppTools.AppSettings.Get_T(name, 0L);
+				DateTime dt = (dtBinary == 0)
+					? defaultValue
+					: DateTime.FromBinary(dtBinary);
+
+				return dt;
+			}
+
+
+
+			internal static T? Get_T<T>(
+			string name,
+			T? defaultValue = default,
+			bool searchAllVersions = true,
+			Version? searchVersionBelowOrEqual = null)
 			{
 
 				RegistryKey keyVersionedSettings = OpenRegKey();
@@ -664,6 +681,9 @@ namespace uom
 		/// <summary>Консоль диспетчер устройств</summary>
 		internal static void StartWinSysTool_MMC_devmgmt()
 			=> StartMMCProcess("devmgmt.msc", true, ThrowExceptionOnError: true);
+
+		internal static void StartWinSysTool_MMC_diskmgmt()
+			=> StartMMCProcess("diskmgmt.msc", true, ThrowExceptionOnError: true);
 
 		#endregion
 
@@ -3466,6 +3486,17 @@ return cItems;
 				//var eAA2 = typeof(XXX).EnumGetAllValuesArray
 			}
 
+			public static T e_BuildFromFlags<T>(this T initialValue, params (CheckBox flagCondition, T flagToSet)[] flags) where T : Enum
+			{
+				Int64 val = Convert.ToInt64(initialValue);
+				foreach (var item in flags)
+				{
+					if (item.flagCondition.Checked) val |= Convert.ToInt64(item.flagToSet);
+				}
+				T TResult = (T)Enum.ToObject(typeof(T), val);
+				return TResult;
+			}
+
 
 
 		}
@@ -3533,7 +3564,10 @@ return cItems;
 						hRegKey.e_GetValueExt(
 							ValueName,
 							defaultValue,
-							(typeof(T) == typeof(string)) ? RegistryValueOptions.DoNotExpandEnvironmentNames : RegistryValueOptions.None);
+							(typeof(T) == typeof(string))
+								? RegistryValueOptions.DoNotExpandEnvironmentNames
+								: RegistryValueOptions.None
+							);
 
 					if (ValueFound && (null != Value)) return (true, Kind, (T)Value);
 				}
@@ -3546,6 +3580,10 @@ return cItems;
 			public static string? e_GetValue_String(this RegistryKey? hRegKey, string ValueName, string? DefaultValue = null)
 				=> hRegKey?.e_GetValueT<string>(ValueName, DefaultValue).Value;
 
+
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static string e_GetValue_StringOrEmpty(this RegistryKey? hRegKey, string ValueName, string? DefaultValue = null)
 				=> hRegKey?.e_GetValue_String(ValueName, DefaultValue)
 				?? string.Empty;
@@ -3779,6 +3817,7 @@ return cItems;
 					case uint data: valueToWrite = data; kind = RegistryValueKind.DWord; break;
 					case ulong data: valueToWrite = data; kind = RegistryValueKind.QWord; break;
 					case char data: valueToWrite = data; kind = RegistryValueKind.String; break;
+					case DateTime dt: valueToWrite = dt.ToBinary(); kind = RegistryValueKind.QWord; break;
 
 					// float, double, decimal
 					default: throw new ArgumentOutOfRangeException($"Unknown type of '{nameof(value)}' = '{typeof(T)}'");
@@ -5317,6 +5356,30 @@ return cItems;
 					while (lst.Items.Count >= maxRows) lst.Items.RemoveAt(0);
 				});
 			}
+
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static int e_LastItemIndex(this ListBox lst) => lst.Items.Count - 1;
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static Object e_LastItem(this ListBox lst) => lst.Items[lst.e_LastItemIndex()];
+
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static Object? e_SelectLastRow(this ListBox lst)
+			{
+				if (lst.Items.Count < 1) return null;
+				lst.SelectedIndex = (lst.e_LastItemIndex());
+				return lst.SelectedItem;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static void e_SetLastItem(this ListBox lst, object newValue)
+				=> lst.Items[lst.e_LastItemIndex()] = newValue;
+
 		}
 
 
@@ -25669,6 +25732,13 @@ return cItems;
 				[In, MarshalAs(UnmanagedType.I4)] WindowMessages wMsg,
 				[In] int wParam,
 				[In, MarshalAs(UnmanagedType.LPTStr)] string? lParam);
+
+			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+			internal static extern IntPtr SendMessage(
+				[In] IntPtr hwnd,
+				[In, MarshalAs(UnmanagedType.I4)] WindowMessages wMsg,
+				[In] int wParam,
+				[In] int lParam);
 
 
 			[DllImport(core.WINDLL_USER, SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]

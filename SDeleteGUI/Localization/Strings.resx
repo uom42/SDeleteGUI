@@ -142,19 +142,13 @@
     <value>Logical drive (clean free space):</value>
   </data>
   <data name="L_CLEAN_TARGET_PHY_DISK" xml:space="preserve">
-    <value>Empty physical disk without partitions:</value>
+    <value>Empty disk without partitions:</value>
   </data>
   <data name="L_DISK_PARTITIONS" xml:space="preserve">
     <value>partition(s)</value>
   </data>
   <data name="L_DONT_ASK_AGAIN" xml:space="preserve">
     <value>Don't ask me this again</value>
-  </data>
-  <data name="L_ELAPSED" xml:space="preserve">
-    <value>{0} since the beginning</value>
-  </data>
-  <data name="L_ESTIMATED" xml:space="preserve">
-    <value>Estimated</value>
   </data>
   <data name="L_FREE_SPACE_CLEAN_METHOD" xml:space="preserve">
     <value>Free space cleaning method:</value>
@@ -165,14 +159,23 @@
   <data name="L_FREE_SPACE_CLEAN_METHOD_ZERO" xml:space="preserve">
     <value>Zero (good for virtual disk optimization)</value>
   </data>
+  <data name="L_MNU_TOOLS" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="L_MNU_TOOLS_DEV_MGMT" xml:space="preserve">
+    <value>Devices Manager</value>
+  </data>
+  <data name="L_MNU_TOOLS_DISK_MGMT" xml:space="preserve">
+    <value>Disk Management Console</value>
+  </data>
   <data name="L_OUTPUT" xml:space="preserve">
     <value>Output:</value>
   </data>
+  <data name="L_OUTPUT_COMPACT" xml:space="preserve">
+    <value>Compact</value>
+  </data>
   <data name="L_OVERWRITE_PASS_COUNT" xml:space="preserve">
     <value>Overwrite Passes:</value>
-  </data>
-  <data name="L_PROGRESS" xml:space="preserve">
-    <value>Pass {0}, progress: {1}% ({2} {3})</value>
   </data>
   <data name="L_SDELETE_LOCATION" xml:space="preserve">
     <value> location: </value>
@@ -192,8 +195,47 @@
   <data name="L_STOP" xml:space="preserve">
     <value>Stop</value>
   </data>
+  <data name="M_COMPLETED_AT" xml:space="preserve">
+    <value>Completed at {0}</value>
+  </data>
+  <data name="M_ELAPSED" xml:space="preserve">
+    <value>{0} since the beginning</value>
+  </data>
+  <data name="M_ESTIMATED" xml:space="preserve">
+    <value>Estimated</value>
+  </data>
   <data name="M_LOADING_DISK_LIST" xml:space="preserve">
     <value>Loading disk list...</value>
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_FSO_DELETED" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PASS_COUNT" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PHY_DISK_NO" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_PROGRESS_PERCENT_2_05" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_MFT" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_CLEANING_PROGRESS" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_PURGING_MFT_FILES" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_OUTPUT_LOCALIZATION_VOLUME_ZEROING_PROGRESS" xml:space="preserve">
+    <value />
+  </data>
+  <data name="M_STARING_SDELETE" xml:space="preserve">
+    <value>Starting:</value>
   </data>
   <data name="Q_MANUAL_SEARCH_SDELETE_BINARY" xml:space="preserve">
     <value>Sysinternals '{0}' or '{1}' was not found in well-known locations!

@@ -33,7 +33,7 @@ namespace SDeleteGUI
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
 			this.tlpParams = new System.Windows.Forms.TableLayoutPanel();
-			this.label4 = new System.Windows.Forms.Label();
+			this.lblCleanMode = new System.Windows.Forms.Label();
 			this.lblOverwritePassCount = new System.Windows.Forms.Label();
 			this.llSDeleteBinPath = new System.Windows.Forms.LinkLabel();
 			this.numPasses = new System.Windows.Forms.NumericUpDown();
@@ -60,14 +60,22 @@ namespace SDeleteGUI
 			this.tlpDown = new System.Windows.Forms.TableLayoutPanel();
 			this.lstLog = new SDeleteGUI.Core.ListBoxEx();
 			this.lblStatus = new System.Windows.Forms.Label();
-			this.label1 = new System.Windows.Forms.Label();
+			this.lblOutput = new System.Windows.Forms.Label();
+			this.chkCompactOutput = new System.Windows.Forms.CheckBox();
 			this.tmrElapsed = new System.Windows.Forms.Timer(this.components);
 			this.enableOnCheck = new uom.controls.Extenders.CheckBoxEnabler(this.components);
+			this.mnuMain = new System.Windows.Forms.MenuStrip();
+			this.mnuTools = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuTools_DevMgmt = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuTools_DiskMgmt = new System.Windows.Forms.ToolStripMenuItem();
+			this.pnlMain = new System.Windows.Forms.Panel();
 			this.tlpParams.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numPasses)).BeginInit();
 			this.tlpCleanFreeSpaceMethods.SuspendLayout();
 			this.tlpDown.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.enableOnCheck)).BeginInit();
+			this.mnuMain.SuspendLayout();
+			this.pnlMain.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tlpParams
@@ -79,7 +87,7 @@ namespace SDeleteGUI
 			this.tlpParams.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this.tlpParams.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tlpParams.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 39F));
-			this.tlpParams.Controls.Add(this.label4, 0, 9);
+			this.tlpParams.Controls.Add(this.lblCleanMode, 0, 9);
 			this.tlpParams.Controls.Add(this.lblOverwritePassCount, 0, 8);
 			this.tlpParams.Controls.Add(this.llSDeleteBinPath, 0, 0);
 			this.tlpParams.Controls.Add(this.numPasses, 2, 8);
@@ -98,7 +106,7 @@ namespace SDeleteGUI
 			this.tlpParams.Controls.Add(this.cboSource_LogDisk, 2, 4);
 			this.tlpParams.Controls.Add(this.btnSource_Refresh, 3, 3);
 			this.tlpParams.Dock = System.Windows.Forms.DockStyle.Top;
-			this.tlpParams.Location = new System.Drawing.Point(21, 22);
+			this.tlpParams.Location = new System.Drawing.Point(16, 16);
 			this.tlpParams.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.tlpParams.Name = "tlpParams";
 			this.tlpParams.RowCount = 10;
@@ -112,21 +120,21 @@ namespace SDeleteGUI
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tlpParams.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tlpParams.Size = new System.Drawing.Size(1094, 300);
+			this.tlpParams.Size = new System.Drawing.Size(846, 300);
 			this.tlpParams.TabIndex = 1;
 			// 
-			// label4
+			// lblCleanMode
 			// 
-			this.label4.AutoSize = true;
-			this.tlpParams.SetColumnSpan(this.label4, 2);
-			this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.label4.Location = new System.Drawing.Point(4, 256);
-			this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(315, 44);
-			this.label4.TabIndex = 0;
-			this.label4.Text = "Free space cleaning method:";
-			this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.lblCleanMode.AutoSize = true;
+			this.tlpParams.SetColumnSpan(this.lblCleanMode, 2);
+			this.lblCleanMode.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.lblCleanMode.Location = new System.Drawing.Point(4, 256);
+			this.lblCleanMode.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			this.lblCleanMode.Name = "lblCleanMode";
+			this.lblCleanMode.Size = new System.Drawing.Size(315, 44);
+			this.lblCleanMode.TabIndex = 0;
+			this.lblCleanMode.Text = "Free space cleaning method:";
+			this.lblCleanMode.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// lblOverwritePassCount
 			// 
@@ -150,7 +158,7 @@ namespace SDeleteGUI
 			this.llSDeleteBinPath.Location = new System.Drawing.Point(4, 0);
 			this.llSDeleteBinPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.llSDeleteBinPath.Name = "llSDeleteBinPath";
-			this.llSDeleteBinPath.Size = new System.Drawing.Size(1086, 24);
+			this.llSDeleteBinPath.Size = new System.Drawing.Size(838, 24);
 			this.llSDeleteBinPath.TabIndex = 0;
 			this.llSDeleteBinPath.TabStop = true;
 			this.llSDeleteBinPath.Text = "SDelete binary location:";
@@ -161,24 +169,24 @@ namespace SDeleteGUI
 			this.numPasses.Location = new System.Drawing.Point(327, 225);
 			this.numPasses.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.numPasses.Maximum = new decimal(new int[] {
-			10,
-			0,
-			0,
-			0});
+            10,
+            0,
+            0,
+            0});
 			this.numPasses.Minimum = new decimal(new int[] {
-			1,
-			0,
-			0,
-			0});
+            1,
+            0,
+            0,
+            0});
 			this.numPasses.Name = "numPasses";
 			this.numPasses.Size = new System.Drawing.Size(94, 26);
 			this.numPasses.TabIndex = 1;
 			this.numPasses.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			this.numPasses.Value = new decimal(new int[] {
-			1,
-			0,
-			0,
-			0});
+            1,
+            0,
+            0,
+            0});
 			// 
 			// optSource_Dir
 			// 
@@ -209,7 +217,7 @@ namespace SDeleteGUI
 			this.tlpCleanFreeSpaceMethods.Name = "tlpCleanFreeSpaceMethods";
 			this.tlpCleanFreeSpaceMethods.RowCount = 1;
 			this.tlpCleanFreeSpaceMethods.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tlpCleanFreeSpaceMethods.Size = new System.Drawing.Size(763, 34);
+			this.tlpCleanFreeSpaceMethods.Size = new System.Drawing.Size(515, 34);
 			this.tlpCleanFreeSpaceMethods.TabIndex = 12;
 			// 
 			// optCleanMode_Clean
@@ -261,7 +269,7 @@ namespace SDeleteGUI
 			this.txtSource_Dir.Location = new System.Drawing.Point(327, 140);
 			this.txtSource_Dir.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.txtSource_Dir.Name = "txtSource_Dir";
-			this.txtSource_Dir.Size = new System.Drawing.Size(724, 26);
+			this.txtSource_Dir.Size = new System.Drawing.Size(476, 26);
 			this.txtSource_Dir.TabIndex = 8;
 			// 
 			// txtSource_Files
@@ -273,7 +281,7 @@ namespace SDeleteGUI
 			this.txtSource_Files.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.txtSource_Files.Name = "txtSource_Files";
 			this.txtSource_Files.ReadOnly = true;
-			this.txtSource_Files.Size = new System.Drawing.Size(724, 26);
+			this.txtSource_Files.Size = new System.Drawing.Size(476, 26);
 			this.txtSource_Files.TabIndex = 10;
 			// 
 			// lblWhatToClean
@@ -284,14 +292,14 @@ namespace SDeleteGUI
 			this.lblWhatToClean.Location = new System.Drawing.Point(4, 39);
 			this.lblWhatToClean.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.lblWhatToClean.Name = "lblWhatToClean";
-			this.lblWhatToClean.Size = new System.Drawing.Size(1086, 20);
+			this.lblWhatToClean.Size = new System.Drawing.Size(838, 20);
 			this.lblWhatToClean.TabIndex = 1;
 			this.lblWhatToClean.Text = "What to clean:";
 			// 
 			// btnSource_DisplaySelectionUI
 			// 
 			this.btnSource_DisplaySelectionUI.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.btnSource_DisplaySelectionUI.Location = new System.Drawing.Point(1059, 140);
+			this.btnSource_DisplaySelectionUI.Location = new System.Drawing.Point(811, 140);
 			this.btnSource_DisplaySelectionUI.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.btnSource_DisplaySelectionUI.Name = "btnSource_DisplaySelectionUI";
 			this.tlpParams.SetRowSpan(this.btnSource_DisplaySelectionUI, 2);
@@ -308,7 +316,7 @@ namespace SDeleteGUI
 			this.panel1.Location = new System.Drawing.Point(4, 212);
 			this.panel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(1086, 3);
+			this.panel1.Size = new System.Drawing.Size(838, 3);
 			this.panel1.TabIndex = 4;
 			// 
 			// pnlSeparetor1
@@ -319,7 +327,7 @@ namespace SDeleteGUI
 			this.pnlSeparetor1.Location = new System.Drawing.Point(4, 29);
 			this.pnlSeparetor1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.pnlSeparetor1.Name = "pnlSeparetor1";
-			this.pnlSeparetor1.Size = new System.Drawing.Size(1086, 5);
+			this.pnlSeparetor1.Size = new System.Drawing.Size(838, 5);
 			this.pnlSeparetor1.TabIndex = 9;
 			// 
 			// optSource_PhyDisk
@@ -345,7 +353,7 @@ namespace SDeleteGUI
 			this.cboSource_PhyDisk.Location = new System.Drawing.Point(327, 64);
 			this.cboSource_PhyDisk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.cboSource_PhyDisk.Name = "cboSource_PhyDisk";
-			this.cboSource_PhyDisk.Size = new System.Drawing.Size(724, 28);
+			this.cboSource_PhyDisk.Size = new System.Drawing.Size(476, 28);
 			this.cboSource_PhyDisk.TabIndex = 3;
 			// 
 			// optSource_LogDisk
@@ -369,14 +377,14 @@ namespace SDeleteGUI
 			this.cboSource_LogDisk.Location = new System.Drawing.Point(327, 102);
 			this.cboSource_LogDisk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.cboSource_LogDisk.Name = "cboSource_LogDisk";
-			this.cboSource_LogDisk.Size = new System.Drawing.Size(724, 28);
+			this.cboSource_LogDisk.Size = new System.Drawing.Size(476, 28);
 			this.cboSource_LogDisk.TabIndex = 5;
 			// 
 			// btnSource_Refresh
 			// 
 			this.btnSource_Refresh.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.btnSource_Refresh.Font = new System.Drawing.Font("Segoe UI", 12F);
-			this.btnSource_Refresh.Location = new System.Drawing.Point(1059, 64);
+			this.btnSource_Refresh.Location = new System.Drawing.Point(811, 64);
 			this.btnSource_Refresh.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.btnSource_Refresh.Name = "btnSource_Refresh";
 			this.tlpParams.SetRowSpan(this.btnSource_Refresh, 2);
@@ -389,10 +397,10 @@ namespace SDeleteGUI
 			// 
 			this.llShellRegister.AutoSize = true;
 			this.llShellRegister.Dock = System.Windows.Forms.DockStyle.Top;
-			this.llShellRegister.Location = new System.Drawing.Point(4, 375);
+			this.llShellRegister.Location = new System.Drawing.Point(4, 254);
 			this.llShellRegister.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.llShellRegister.Name = "llShellRegister";
-			this.llShellRegister.Size = new System.Drawing.Size(921, 20);
+			this.llShellRegister.Size = new System.Drawing.Size(673, 20);
 			this.llShellRegister.TabIndex = 13;
 			this.llShellRegister.TabStop = true;
 			this.llShellRegister.Text = "*";
@@ -406,23 +414,23 @@ namespace SDeleteGUI
 			this.pnlSeparator3.Location = new System.Drawing.Point(4, 5);
 			this.pnlSeparator3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.pnlSeparator3.Name = "pnlSeparator3";
-			this.pnlSeparator3.Size = new System.Drawing.Size(1086, 5);
+			this.pnlSeparator3.Size = new System.Drawing.Size(838, 5);
 			this.pnlSeparator3.TabIndex = 22;
 			// 
 			// pbProgress
 			// 
 			this.tlpDown.SetColumnSpan(this.pbProgress, 2);
 			this.pbProgress.Dock = System.Windows.Forms.DockStyle.Top;
-			this.pbProgress.Location = new System.Drawing.Point(4, 321);
+			this.pbProgress.Location = new System.Drawing.Point(4, 200);
 			this.pbProgress.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.pbProgress.Name = "pbProgress";
-			this.pbProgress.Size = new System.Drawing.Size(1086, 11);
+			this.pbProgress.Size = new System.Drawing.Size(838, 11);
 			this.pbProgress.TabIndex = 25;
 			// 
 			// btnStartStop
 			// 
 			this.btnStartStop.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.btnStartStop.Location = new System.Drawing.Point(933, 343);
+			this.btnStartStop.Location = new System.Drawing.Point(685, 222);
 			this.btnStartStop.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.btnStartStop.Name = "btnStartStop";
 			this.tlpDown.SetRowSpan(this.btnStartStop, 2);
@@ -440,11 +448,12 @@ namespace SDeleteGUI
 			this.tlpDown.Controls.Add(this.btnStartStop, 1, 5);
 			this.tlpDown.Controls.Add(this.lstLog, 0, 2);
 			this.tlpDown.Controls.Add(this.lblStatus, 0, 5);
-			this.tlpDown.Controls.Add(this.label1, 0, 1);
+			this.tlpDown.Controls.Add(this.lblOutput, 0, 1);
 			this.tlpDown.Controls.Add(this.pnlSeparator3, 0, 0);
 			this.tlpDown.Controls.Add(this.llShellRegister, 0, 6);
+			this.tlpDown.Controls.Add(this.chkCompactOutput, 1, 1);
 			this.tlpDown.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.tlpDown.Location = new System.Drawing.Point(21, 322);
+			this.tlpDown.Location = new System.Drawing.Point(16, 316);
 			this.tlpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.tlpDown.Name = "tlpDown";
 			this.tlpDown.RowCount = 7;
@@ -455,7 +464,8 @@ namespace SDeleteGUI
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 22F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
 			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-			this.tlpDown.Size = new System.Drawing.Size(1094, 400);
+			this.tlpDown.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			this.tlpDown.Size = new System.Drawing.Size(846, 279);
 			this.tlpDown.TabIndex = 1;
 			// 
 			// lstLog
@@ -464,49 +474,105 @@ namespace SDeleteGUI
 			this.lstLog.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.lstLog.IntegralHeight = false;
 			this.lstLog.ItemHeight = 20;
-			this.lstLog.Location = new System.Drawing.Point(4, 40);
+			this.lstLog.Location = new System.Drawing.Point(4, 50);
 			this.lstLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.lstLog.Name = "lstLog";
-			this.lstLog.Size = new System.Drawing.Size(1086, 260);
+			this.lstLog.Size = new System.Drawing.Size(838, 129);
 			this.lstLog.TabIndex = 1;
 			// 
 			// lblStatus
 			// 
 			this.lblStatus.AutoSize = true;
 			this.lblStatus.Dock = System.Windows.Forms.DockStyle.Top;
-			this.lblStatus.Location = new System.Drawing.Point(4, 338);
+			this.lblStatus.Location = new System.Drawing.Point(4, 217);
 			this.lblStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.lblStatus.Name = "lblStatus";
-			this.lblStatus.Size = new System.Drawing.Size(921, 20);
+			this.lblStatus.Size = new System.Drawing.Size(673, 20);
 			this.lblStatus.TabIndex = 26;
 			this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
-			// label1
+			// lblOutput
 			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(4, 15);
-			this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(62, 20);
-			this.label1.TabIndex = 0;
-			this.label1.Text = "Output:";
+			this.lblOutput.AutoSize = true;
+			this.lblOutput.Location = new System.Drawing.Point(4, 15);
+			this.lblOutput.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			this.lblOutput.Name = "lblOutput";
+			this.lblOutput.Size = new System.Drawing.Size(62, 20);
+			this.lblOutput.TabIndex = 0;
+			this.lblOutput.Text = "Output:";
+			// 
+			// chkCompactOutput
+			// 
+			this.chkCompactOutput.AutoSize = true;
+			this.chkCompactOutput.Checked = true;
+			this.chkCompactOutput.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.chkCompactOutput.Dock = System.Windows.Forms.DockStyle.Right;
+			this.chkCompactOutput.Location = new System.Drawing.Point(730, 18);
+			this.chkCompactOutput.Name = "chkCompactOutput";
+			this.chkCompactOutput.Size = new System.Drawing.Size(113, 24);
+			this.chkCompactOutput.TabIndex = 27;
+			this.chkCompactOutput.Text = "checkBox1";
+			this.chkCompactOutput.UseVisualStyleBackColor = true;
 			// 
 			// tmrElapsed
 			// 
 			this.tmrElapsed.Interval = 1000;
 			// 
+			// mnuMain
+			// 
+			this.mnuMain.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
+			this.mnuMain.ImageScalingSize = new System.Drawing.Size(24, 24);
+			this.mnuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuTools});
+			this.mnuMain.Location = new System.Drawing.Point(0, 0);
+			this.mnuMain.Name = "mnuMain";
+			this.mnuMain.Size = new System.Drawing.Size(878, 33);
+			this.mnuMain.TabIndex = 2;
+			this.mnuMain.Text = "menuStrip1";
+			// 
+			// mnuTools
+			// 
+			this.mnuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuTools_DevMgmt,
+            this.mnuTools_DiskMgmt});
+			this.mnuTools.Name = "mnuTools";
+			this.mnuTools.Size = new System.Drawing.Size(50, 29);
+			this.mnuTools.Text = "Tol";
+			// 
+			// mnuTools_DevMgmt
+			// 
+			this.mnuTools_DevMgmt.Name = "mnuTools_DevMgmt";
+			this.mnuTools_DevMgmt.Size = new System.Drawing.Size(148, 34);
+			this.mnuTools_DevMgmt.Text = "Dev";
+			// 
+			// mnuTools_DiskMgmt
+			// 
+			this.mnuTools_DiskMgmt.Name = "mnuTools_DiskMgmt";
+			this.mnuTools_DiskMgmt.Size = new System.Drawing.Size(148, 34);
+			this.mnuTools_DiskMgmt.Text = "Disk";
+			// 
+			// pnlMain
+			// 
+			this.pnlMain.Controls.Add(this.tlpDown);
+			this.pnlMain.Controls.Add(this.tlpParams);
+			this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.pnlMain.Location = new System.Drawing.Point(0, 33);
+			this.pnlMain.Name = "pnlMain";
+			this.pnlMain.Padding = new System.Windows.Forms.Padding(16);
+			this.pnlMain.Size = new System.Drawing.Size(878, 611);
+			this.pnlMain.TabIndex = 3;
+			// 
 			// frmMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1136, 744);
-			this.Controls.Add(this.tlpDown);
-			this.Controls.Add(this.tlpParams);
+			this.ClientSize = new System.Drawing.Size(878, 644);
+			this.Controls.Add(this.pnlMain);
+			this.Controls.Add(this.mnuMain);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-			this.MinimumSize = new System.Drawing.Size(800, 800);
+			this.MinimumSize = new System.Drawing.Size(800, 600);
 			this.Name = "frmMain";
-			this.Padding = new System.Windows.Forms.Padding(21, 22, 21, 22);
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "frmMain";
 			this.tlpParams.ResumeLayout(false);
@@ -517,6 +583,10 @@ namespace SDeleteGUI
 			this.tlpDown.ResumeLayout(false);
 			this.tlpDown.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.enableOnCheck)).EndInit();
+			this.mnuMain.ResumeLayout(false);
+			this.mnuMain.PerformLayout();
+			this.pnlMain.ResumeLayout(false);
+			this.pnlMain.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -539,7 +609,7 @@ namespace SDeleteGUI
 		private RadioButton optCleanMode_Zero;
 		private RadioButton optCleanMode_Clean;
 		private TableLayoutPanel tlpCleanFreeSpaceMethods;
-		private Label label4;
+		private Label lblCleanMode;
 		private RadioButton optSource_PhyDisk;
 		private ComboBox cboSource_PhyDisk;
 		private Button btnStartStop;
@@ -552,8 +622,14 @@ namespace SDeleteGUI
 		private Panel pnlSeparator3;
 		private Label lblStatus;
 		private System.Windows.Forms.Timer tmrElapsed;
-		private Label label1;
+		private Label lblOutput;
 		private LinkLabel llShellRegister;
 		private uom.controls.Extenders.CheckBoxEnabler enableOnCheck;
+		private CheckBox chkCompactOutput;
+		private MenuStrip mnuMain;
+		private ToolStripMenuItem mnuTools;
+		private ToolStripMenuItem mnuTools_DiskMgmt;
+		private Panel pnlMain;
+		private ToolStripMenuItem mnuTools_DevMgmt;
 	}
 }

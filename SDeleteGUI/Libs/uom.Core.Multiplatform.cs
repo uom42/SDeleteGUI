@@ -36,6 +36,7 @@ using System.Xml.Linq;
 //Console.WriteLine("Visual Studio 7");
 #endif
 
+//if (args.Hyperlink.StartsWith("http:", StringComparison.InvariantCultureIgnoreCase))
 
 #region Code Snippets
 
@@ -499,6 +500,26 @@ fixed (char* p = message)
 #region SWITCH
 
 /*
+ * 
+ object numericValue = Type.GetTypeCode(typeof(T)) switch
+				{
+					TypeCode.Int16 => Int16.Parse(stringValue, style),
+					TypeCode.Int32 => Int32.Parse(stringValue, style),
+					TypeCode.Int64 => Int64.Parse(stringValue, style),
+
+					TypeCode.UInt16 => UInt16.Parse(stringValue, style),
+					TypeCode.UInt32 => UInt32.Parse(stringValue, style),
+					TypeCode.UInt64 => UInt64.Parse(stringValue, style),
+
+					TypeCode.Decimal => Decimal.Parse(stringValue, style),
+					TypeCode.Double => Double.Parse(stringValue, style),
+					TypeCode.Single => Single.Parse(stringValue, style),
+
+					TypeCode.Byte => Byte.Parse(stringValue, style),
+
+					_ => defaultValue
+				};
+
   var ttt = direction switch
     {
         Direction.Up    => Orientation.North,
@@ -985,6 +1006,15 @@ public static class Faker
 #endregion
 #region ASYNC_AWAIT SAMPLE
 /*
+	IAsyncResult rAsincRslt = psInstance.BeginInvoke();
+	void waitAsyncFinished() { while (rAsincRslt.IsCompleted == false) Thread.Sleep(500); }
+	await ((Action)waitAsyncFinished).e_StartAndWaitAsync(true);
+	PSDataCollection<PSObject> psResult = psInstance.EndInvoke(rAsincRslt);
+
+	**** AWAIT with IAsyncResult 
+	var result = await Task.Factory.FromAsync(psInstance.BeginInvoke(), psInstance.EndInvoke); 
+
+ * 
 
 When yo do not need any task to run, just return
 Task.CompletedTask;
@@ -1301,6 +1331,8 @@ private static async Task<int> AnotherSlowCalculation()
  */
 
 #endregion
+
+
 
 /// <summary>Commnon Tools For Net Multiplatform
 /// (C) UOM 2000-2023 </summary>
@@ -3414,7 +3446,32 @@ namespace uom
 
 
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static T e_ParseAsNumeric<T>(this string stringValue, T defaultValue, NumberStyles style = NumberStyles.None) where T : struct
+			{
+				if (stringValue.e_IsNullOrWhiteSpace()) return defaultValue;
 
+				object numericValue = Type.GetTypeCode(typeof(T)) switch
+				{
+					TypeCode.Int16 => Int16.Parse(stringValue, style),
+					TypeCode.Int32 => Int32.Parse(stringValue, style),
+					TypeCode.Int64 => Int64.Parse(stringValue, style),
+
+					TypeCode.UInt16 => UInt16.Parse(stringValue, style),
+					TypeCode.UInt32 => UInt32.Parse(stringValue, style),
+					TypeCode.UInt64 => UInt64.Parse(stringValue, style),
+
+					TypeCode.Decimal => Decimal.Parse(stringValue, style),
+					TypeCode.Double => Double.Parse(stringValue, style),
+					TypeCode.Single => Single.Parse(stringValue, style),
+
+					TypeCode.Byte => Byte.Parse(stringValue, style),
+
+					_ => defaultValue
+				};
+
+				return (T)numericValue;
+			}
 
 
 
@@ -4254,6 +4311,22 @@ namespace uom
 
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal static class Extensions_RegEx
+		{
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static T e_ParseRegexValueAsNumeric<T>(this GroupCollection g, string groupName, T defaultValue, NumberStyles style = NumberStyles.None) where T : struct
+				=> (g[groupName].Value ?? "").e_ParseAsNumeric(defaultValue, style);
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static T e_ParseRegexValueAsNumeric<T>(this Match mx, string groupName, T defaultValue, NumberStyles style = NumberStyles.None) where T : struct
+				=> mx.Groups.e_ParseRegexValueAsNumeric<T>(groupName, defaultValue, style);
+
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		internal static class Extensions_StringAndFormat
 		{
 
@@ -4874,19 +4947,20 @@ namespace uom
 			}
 
 			#region Wrap
-			private const string CS_ESCAPE_LF = "\n";
+			//private const string CS_ESCAPE_LF = "\n";
 
-			/// <summary>Заменяет "\n" на VBCRLF</summary>
+			/// <summary>Replacing "\n" to Environment.NewLine</summary>
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static string e_WrapCPP(this string SourceText) => SourceText.Replace(@"\n", CS_ESCAPE_LF);
+			internal static string e_WrapCPP(this string SourceText) => SourceText.Replace(@"\n", Environment.NewLine);
 
-			/// <summary>Заменяет символ "|" на VBCRLF</summary>
+			/// <summary>Replacing "|" to Environment.NewLine</summary>
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static string e_WrapVB(this string SourceText) => SourceText.Replace('|'.ToString(), CS_ESCAPE_LF);
+			internal static string e_WrapVB(this string SourceText) => SourceText.Replace('|'.ToString(), Environment.NewLine);
 
 
-			/// <summary>Вызывает WrapCPP("\n"), затем WrapVB("|") на VBCRLF</summary>
-			[MethodImpl(MethodImplOptions.AggressiveInlining)] internal static string e_Wrap(this string SourceText) => SourceText.e_WrapVB().e_WrapCPP();
+			/// <summary>Replacing "\n" or "|" to Environment.NewLine</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static string e_Wrap(this string SourceText) => SourceText.e_WrapVB().e_WrapCPP();
 
 			#endregion
 
@@ -5663,6 +5737,15 @@ namespace uom
 				_ = source ?? throw new ArgumentNullException(nameof(source));
 				return (from N in source orderby N select N).ToArray();
 			}
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static string[] e_SortArrayOfStrings(this string[] source)
+			{
+				Array.Sort(source, StringComparer.InvariantCultureIgnoreCase);
+				return source;
+			}
+
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static T[] e_SortAsArray<T>(this IEnumerable<T> source) where T : System.IComparable<T>
@@ -7249,8 +7332,7 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static FileStream e_CreateStreamR(this FileInfo fi,
-				FileMode fm = FileMode.Open, FileAccess fa = FileAccess.Read, FileShare fs = FileShare.ReadWrite)
+			public static FileStream e_CreateStreamR(this FileInfo fi, FileMode fm = FileMode.Open, FileAccess fa = FileAccess.Read, FileShare fs = FileShare.ReadWrite)
 					=> new(fi.FullName, fm, fa, fs);
 
 
@@ -7337,12 +7419,16 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			internal static IEnumerable<string> e_ReadLines(this FileInfo fi, Encoding? encoding = null, bool skipEmptyLines = false)
+			internal static string[] e_ReadLines(this FileInfo fi, Encoding? encoding = null, bool skipEmptyLines = false)
 			{
-				using var fs = fi.e_CreateStreamR();
-				using var sr = new System.IO.StreamReader(fs, encoding ?? Encoding.Unicode);
-				return sr.e_ReadLines(skipEmptyLines);
+				using FileStream fs = fi.e_CreateStreamR();
+				using StreamReader sr = new(fs, encoding ?? Encoding.Unicode);
+				return sr.e_ReadLines(skipEmptyLines).ToArray();
 			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static async Task<string[]> e_ReadLinesAsync(this FileInfo fi, Encoding? encoding = null, bool skipEmptyLines = false)
+				=> await Task.Factory.StartNew(() => fi.e_ReadLines(encoding, skipEmptyLines), TaskCreationOptions.LongRunning);
 
 			#endregion
 
@@ -7819,6 +7905,14 @@ namespace uom
 
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static async Task e_StartAndWaitAsync(this Action a, bool longRunning)
+			{
+				using (Task tskWaitJobFinish = new(a, TaskCreationOptions.LongRunning))
+					await tskWaitJobFinish.e_StartAndWaitAsync();
+			}
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			internal static async Task e_StartAndWaitAsync(this Task t)
 			{
 				t.Start();
@@ -7903,6 +7997,22 @@ namespace uom
 				finally { finallyAction?.Invoke(); }
 			}
 
+			/// <summary>Exec FUNC. Return result</summary>
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			internal static (bool result, Exception? ex) e_tryCatchWithErrorUI(this Action a)
+			{
+				try
+				{
+					a.Invoke();
+					return (true, null);
+				}
+				catch (Exception ex)
+				{
+					ex.e_LogError(true);
+					return (false, ex);
+				}
+			}
+
 			/// <inheritdoc cref="e_tryCatch" />
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			internal static T? e_tryCatch<T>(this Func<T?> a, T? resultOnError = default, Action? finallyAction = null)
@@ -7960,6 +8070,23 @@ namespace uom
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		internal static partial class Extensions_DebugAndErrors
 		{
+
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static void e_trycatch(this Func<uint> operation, string errorMessageTemplate, params object[] messageArgs)
+			{
+				const uint S_OK = 0;
+				uint result = operation();
+				if (result != S_OK)
+				{
+					string message = string.Format(errorMessageTemplate, messageArgs);
+					throw new Exception($"{message}. Error code: {result} (see WinError.h)");
+				}
+			}
+
+
+
+
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static void DEBUG_SHOW_LINE(this string sMessage) => $"{sMessage} \r\n".DEBUG_SHOW();
 

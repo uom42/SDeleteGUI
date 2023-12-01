@@ -169,6 +169,12 @@ namespace uom.Extensions
 			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
 			=> log.Value.e_Debug(message, callerName, sourceFilePath, sourceLineNumber);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void e_Debug(this Lazy<Logger> log, string? message = null,
+			[System.Runtime.CompilerServices.CallerMemberName] string callerName = "",
+			[System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
+			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+			=> log.Value.e_Debug(message, callerName, sourceFilePath, sourceLineNumber);
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -180,6 +186,13 @@ namespace uom.Extensions
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void e_Warn(this Lazy<ILogger> log, string? message = null,
+			[System.Runtime.CompilerServices.CallerMemberName] string callerName = "",
+			[System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
+			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+			=> log.Value.e_Warn(message, callerName, sourceFilePath, sourceLineNumber);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void e_Warn(this Lazy<Logger> log, string? message = null,
 			[System.Runtime.CompilerServices.CallerMemberName] string callerName = "",
 			[System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
 			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
@@ -201,6 +214,12 @@ namespace uom.Extensions
 			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
 			=> log.Value.e_Error(ex, callerName, sourceFilePath, sourceLineNumber);
 
+		public static void e_Error(this Lazy<Logger> log, Exception ex,
+			[System.Runtime.CompilerServices.CallerMemberName] string callerName = "",
+			[System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
+			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+			=> log.Value.e_Error(ex, callerName, sourceFilePath, sourceLineNumber);
+
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -212,6 +231,13 @@ namespace uom.Extensions
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void e_Fatal(this Lazy<ILogger> log, Exception ex,
+			[System.Runtime.CompilerServices.CallerMemberName] string callerName = "",
+			[System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
+			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+			=> log.Value.e_Fatal(ex, callerName, sourceFilePath, sourceLineNumber);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void e_Fatal(this Lazy<Logger> log, Exception ex,
 			[System.Runtime.CompilerServices.CallerMemberName] string callerName = "",
 			[System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
 			[System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
