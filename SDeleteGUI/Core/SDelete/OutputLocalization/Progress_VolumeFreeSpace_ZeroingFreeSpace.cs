@@ -4,7 +4,7 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 {
 
 	//Zeroing free space on T:\: 0%
-	internal class Progress_VolumeFreeSpace_ZeroingFreeSpace : Progress_BaseEventArgs
+	internal class Progress_VolumeFreeSpace_ZeroingFreeSpace(string raw, string volumeName, uint progressPercent) : Progress_BaseEventArgs(raw, progressPercent)
 	{
 
 		private const string C_PREFIX = "Zeroing free space on ";
@@ -14,17 +14,14 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 				RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
 
 
-		public readonly string VolumeName;
-
-		internal Progress_VolumeFreeSpace_ZeroingFreeSpace(string raw, string volumeName, uint progressPercent) : base(raw, progressPercent)
-		{
-			VolumeName = volumeName;
-		}
+		public readonly string VolumeName = volumeName;
 
 
 		public static bool TryParse(string raw, out Progress_VolumeFreeSpace_ZeroingFreeSpace? piea)
 		{
 			piea = null;
+
+
 
 			if (!raw.StartsWith(C_PREFIX, StringComparison.InvariantCultureIgnoreCase)) return false;
 
@@ -43,8 +40,11 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 
 		public override string ToString()
 		{
-			string localizedFormat = Localization.Strings.M_OUTPUT_LOCALIZATION_VOLUME_ZEROING_PROGRESS;
 
+			var ddd = this.VolumeName;
+
+
+			string localizedFormat = Localization.Strings.M_OUTPUT_LOCALIZATION_VOLUME_ZEROING_PROGRESS;
 			return localizedFormat.e_IsNullOrWhiteSpace()
 					? RAWData
 					: localizedFormat.e_Format(VolumeName, CurrentOperationProgressPercent);

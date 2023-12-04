@@ -2,20 +2,17 @@
 
 namespace SDeleteGUI.Core.SDelete.OutputLocalization
 {
-	internal class Header_PassInfoEventArgs : DataReceivedEventArgsEx
-	{
 
+	//SDelete is set for 1 pass.
+	internal class Header_PassInfoEventArgs(string raw, uint passCount) : DataReceivedEventArgsEx(raw)
+	{
 		private const string C_PREFIX = "SDelete is set for ";
 
-		//SDelete is set for 1 pass.
 		private static readonly Regex _rx = new(@".+ set \s for \s (?<PassCount>\d+) \s pass",
 				RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
 
 
-		public readonly uint PassCount;
-
-
-		internal Header_PassInfoEventArgs(string raw, uint passCount) : base(raw) => PassCount = passCount;
+		public readonly uint PassCount = passCount;
 
 
 		public static bool TryParse(string raw, out Header_PassInfoEventArgs? piea)
@@ -36,11 +33,9 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 		public override string ToString()
 		{
 			string localizedFormat = Localization.Strings.M_OUTPUT_LOCALIZATION_PASS_COUNT;
-
 			return localizedFormat.e_IsNullOrWhiteSpace()
 					? RAWData
 					: localizedFormat.e_Format(PassCount);
 		}
-
 	}
 }

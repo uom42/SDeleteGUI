@@ -119,7 +119,7 @@ namespace SDeleteGUI
 										if (rowLooksLikePrevious)
 										{
 											//Looks like the some string as previous with some changes... Just update last row
-											e!.UpdateTimestamp(dreaxlastLogRow.Timestamp);
+											//e!.UpdateTimestamp(dreaxlastLogRow.Timestamp);
 											lstLog.e_SetLastItem(e);
 											_lastLogRow = e;
 											return;

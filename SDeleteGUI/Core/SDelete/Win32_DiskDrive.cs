@@ -4,6 +4,7 @@
 
 namespace SDeleteGUI.Core.SDelete
 {
+
 	internal class Win32_DiskDrive : IEquatable<Win32_DiskDrive?>
 	{
 		public readonly string DeviceID;
@@ -56,9 +57,6 @@ namespace SDeleteGUI.Core.SDelete
 
 			Partitions = mo.e_ReadMOProperty_uint("Partitions");
 
-#if DEBUG
-			var aaa = mo.e_GetAllProperties();
-#endif
 		}
 
 

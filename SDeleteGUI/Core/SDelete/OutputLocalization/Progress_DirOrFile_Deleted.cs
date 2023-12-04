@@ -4,18 +4,14 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 {
 
 	/*
-	T:\file.txt...deleted.
 	T:\folder...deleted.
+	T:\file.txt...deleted.
 	 */
-	internal class Progress_DirOrFile_Deleted : DataReceivedEventArgsEx
+	internal class Progress_DirOrFile_Deleted(string raw, string fileSystemObject) : DataReceivedEventArgsEx(raw)
 	{
 		private const string C_SUFFIX = "...deleted.";
 
-		public readonly string FileSystemObject;
-
-
-		internal Progress_DirOrFile_Deleted(string raw, string fileSystemObject) : base(raw)
-			=> FileSystemObject = fileSystemObject;
+		public readonly string FileSystemObject = fileSystemObject;
 
 
 		public static bool TryParse(string raw, out Progress_DirOrFile_Deleted? piea)
@@ -33,7 +29,6 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 		public override string ToString()
 		{
 			string localizedFormat = Localization.Strings.M_OUTPUT_LOCALIZATION_FSO_DELETED;
-
 			return localizedFormat.e_IsNullOrWhiteSpace()
 					? RAWData
 					: localizedFormat.e_Format(FileSystemObject);

@@ -2,20 +2,17 @@
 
 namespace SDeleteGUI.Core.SDelete.OutputLocalization
 {
-	internal class Header_CleaningPhyDiskEventArgs : DataReceivedEventArgsEx
+
+	//Cleaning disk 6:
+	internal class Header_CleaningPhyDiskEventArgs(string raw, uint diskNumber) : DataReceivedEventArgsEx(raw)
 	{
 
 		private const string C_PREFIX = "Cleaning disk ";
 
-		//Cleaning disk 6:
 		private static readonly Regex _rx = new(@"Cleaning \s disk \s (?<DiskNumber>\d+)\:",
 				RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
 
-
-		public readonly uint DiskNumber;
-
-
-		internal Header_CleaningPhyDiskEventArgs(string raw, uint passCount) : base(raw) => DiskNumber = passCount;
+		public readonly uint DiskNumber = diskNumber;
 
 
 		public static bool TryParse(string raw, out Header_CleaningPhyDiskEventArgs? piea)
@@ -36,7 +33,6 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 		public override string ToString()
 		{
 			string localizedFormat = Localization.Strings.M_OUTPUT_LOCALIZATION_PHY_DISK_NO;
-
 			return localizedFormat.e_IsNullOrWhiteSpace()
 					? RAWData
 					: localizedFormat.e_Format(DiskNumber);

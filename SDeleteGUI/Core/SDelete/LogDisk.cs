@@ -6,12 +6,14 @@ namespace SDeleteGUI.Core.SDelete
 	{
 		private readonly DriveInfo _di;
 
-		private LogDisk(DriveInfo di) { _di = di; }
+		private LogDisk(DriveInfo di) => _di = di;
 
 		public char DiskLetter => ToString()[0];
 
 		public override string ToString()
 		{
+
+
 			return $"{_di.Name.Substring(0, 2)} {_di.DriveFormat}"
 				+ (string.IsNullOrWhiteSpace(_di.VolumeLabel)
 					? string.Empty

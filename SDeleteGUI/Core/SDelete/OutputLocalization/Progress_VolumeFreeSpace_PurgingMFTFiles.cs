@@ -4,7 +4,7 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 {
 
 	//Purging MFT files 4% complete
-	internal class Progress_VolumeFreeSpace_PurgingMFTFiles : Progress_BaseEventArgs
+	internal class Progress_VolumeFreeSpace_PurgingMFTFiles(string raw, uint currentOperationProgressPercent) : Progress_BaseEventArgs(raw, currentOperationProgressPercent)
 	{
 
 		private const string C_PREFIX = "Purging MFT files ";
@@ -12,9 +12,6 @@ namespace SDeleteGUI.Core.SDelete.OutputLocalization
 		private static readonly Regex _rx
 			= new(@"^Purging \s MFT \s files \s (?<PercentProgress>\d+)%",
 				RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
-
-
-		internal Progress_VolumeFreeSpace_PurgingMFTFiles(string raw, uint currentOperationProgressPercent) : base(raw, currentOperationProgressPercent) { }
 
 
 		public static bool TryParse(string raw, out Progress_VolumeFreeSpace_PurgingMFTFiles? piea)

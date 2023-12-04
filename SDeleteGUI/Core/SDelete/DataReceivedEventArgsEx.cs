@@ -4,7 +4,7 @@
 namespace SDeleteGUI.Core.SDelete
 {
 
-	internal class DataReceivedEventArgsEx : System.EventArgs
+	internal class DataReceivedEventArgsEx(string data) : System.EventArgs()
 	{
 
 		#region OutputLocalization
@@ -28,24 +28,7 @@ namespace SDeleteGUI.Core.SDelete
 		#endregion
 
 
-		public DateTime Timestamp { get; private set; } = DateTime.Now;
-		public readonly string RAWData = string.Empty;
-
-
-		public DataReceivedEventArgsEx(string data) : base()
-		{
-			this.RAWData = data;
-		}
-
-
-		public void UpdateTimestamp(DateTime newTimestamp)
-		{
-			Timestamp = newTimestamp;
-			RecalculateEstimation();
-		}
-
-
-		protected virtual void RecalculateEstimation() { }
+		public readonly string RAWData = data;
 
 
 		public override string ToString() => RAWData;
@@ -72,18 +55,6 @@ namespace SDeleteGUI.Core.SDelete
 						break;
 					}
 				}
-
-				/* OLD
-				if (OutputLocalization.Header_CleaningPhyDiskEventArgs.TryParse(rawDada, out var hdr_pd))
-					dreax = hdr_pd;
-				else if (OutputLocalization.Header_PassInfoEventArgs.TryParse(rawDada, out var hdr_pi))
-					dreax = hdr_pi;
-				else if (OutputLocalization.Progress_VolumeFreeSpace_ZeroingFreeSpace.TryParse(rawDada, out var vol_pi))
-					dreax = vol_pi;
-				else if (OutputLocalization.Progress_PhyDisk_ProgressEventArgs.TryParse(rawDada, out var pri))
-					dreax = pri;
-				 */
-
 			}
 			catch (Exception ex)
 			{

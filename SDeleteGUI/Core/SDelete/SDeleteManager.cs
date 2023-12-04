@@ -8,6 +8,7 @@ namespace SDeleteGUI.Core.SDelete
 {
 	internal class SDeleteManager
 	{
+
 		internal const string C_SDBIN_FILE64 = @"sdelete64.exe";
 		internal const string C_SDBIN_FILE = @"sdelete.exe";
 		private const string C_DEFAULT_CHOCOLATEY_SDBIN_DIR = @"C:\ProgramData\chocolatey\lib\sysinternals\tools";
